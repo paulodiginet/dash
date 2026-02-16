@@ -1,0 +1,2169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dashboard de Vendas</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root {
+    --c: #0084D1;  /* Azul profissional */
+    --m: #E91E8C;  /* Magenta sofisticado */
+    --y: #F4B860;  /* Âmbar premium */
+    --k: #0F1419;  /* Preto mais profundo */
+    --bg: #0A0E14;  /* Fundo mais escuro */
+    --card: #131B26;  /* Card mais profundo */
+    --muted: #8B95A5;  /* Muted refinado */
+    --text: #F0F4FF;  /* Texto premium */
+    --border: rgba(255,255,255,0.10);  /* Borda mais visível */
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.15);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.20);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,.25);
+    --radius: 16px;
+    --gap: 14px;
+    
+/* Design system */
+--fs-h1: 32px;  /* +60% */
+--fs-sub: 15px;
+--fs-label: 14px;
+--fs-input: 15px;
+--fs-btn: 14px;
+--fs-kpi-title: 14px;
+--fs-kpi-value: 24px;  /* +33% - Ajustado para não cortar */
+--fs-kpi-sub: 14px;
+--fs-section-title: 24px;
+--fs-h2: 20px;
+--fs-table: 15px;
+--fs-small: 12px;
+--pad-card: 14px;
+--pad-band-y: 12px;
+--mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: radial-gradient(1200px 600px at 10% 0%, rgba(0,174,239,.12), transparent 60%),
+                radial-gradient(1000px 600px at 90% 0%, rgba(236,0,140,.10), transparent 60%),
+                radial-gradient(900px 600px at 60% 80%, rgba(255,242,0,.08), transparent 60%),
+                var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 28px 18px 16px;
+    max-width: 1250px;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(255,255,255,.02) 0%, transparent 100%);
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: var(--fs-h1);
+    letter-spacing: -0.5px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--text) 0%, rgba(240,244,255,.8) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: var(--fs-sub);
+    line-height: 1.4;
+  }
+  .wrap {
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 10px 18px 30px;
+  }
+  .panel {
+    background: linear-gradient(135deg, rgba(19,27,38,.95) 0%, rgba(15,20,26,.95) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  .panel:hover {
+    border-color: var(--c);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(0,132,209,.1);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
+  }
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 10px;
+    align-items: end;
+  }
+  .field { grid-column: span 3; min-width: 170px; }
+  .field.wide { grid-column: span 6; }
+  .field.full { grid-column: 1 / -1; }
+  label {
+    display: block;
+    font-size: var(--fs-label);
+    color: var(--muted);
+    margin: 0 0 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  input[type="date"], select, input[type="file"] {
+    width: 100%;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 14px;
+    outline: none;
+    font-size: var(--fs-input);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1.6;
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+  }
+  input[type="date"]:hover, select:hover, input[type="file"]:hover {
+    background: rgba(255,255,255,.06);
+    border-color: var(--c);
+  }
+  input[type="date"]:focus, select:focus, input[type="file"]:focus {
+    border-color: var(--c);
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 4px rgba(0,132,209,.15), var(--shadow-md);
+  }
+  select[multiple] {
+    min-height: 130px;
+    padding: 8px;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.03) 100%);
+    color: var(--text);
+    padding: 11px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: var(--fs-btn);
+    user-select: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    letter-spacing: 0.2px;
+  }
+  .btn:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.06) 100%);
+    border-color: var(--c);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+  .btn.active {
+    border-color: var(--c);
+    background: linear-gradient(135deg, rgba(0,132,209,.25) 0%, rgba(0,132,209,.15) 100%);
+    box-shadow: 0 0 0 4px rgba(0,132,209,.15), var(--shadow-md);
+  }
+  .btn.primary {
+    border-color: var(--m);
+    background: linear-gradient(135deg, rgba(233,30,140,.25) 0%, rgba(233,30,140,.15) 100%);
+    box-shadow: 0 0 0 4px rgba(233,30,140,.15), var(--shadow-md);
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-top: var(--gap);
+  }
+  @media (max-width: 1100px) {
+    .cards { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+  .card {
+    background: linear-gradient(135deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.02) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,132,209,.5), transparent);
+  }
+  .card:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.04) 100%);
+    border-color: var(--c);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+  .kpi-title { font-size: var(--fs-kpi-title); color: var(--muted); margin-bottom: 10px; font-weight: 600; letter-spacing: 0.3px; }
+  .kpi-value { font-size: var(--fs-kpi-value); font-weight: 700; letter-spacing: -0.3px; line-height: 1.3; word-break: break-word; overflow-wrap: break-word; margin: 6px 0; }
+  .kpi-sub { font-size: var(--fs-kpi-sub); color: var(--muted); margin-top: 10px; font-weight: 500; }
+  .accent-c { color: var(--c); }
+  .accent-m { color: var(--m); }
+  .accent-y { color: var(--y); }
+
+  .section { margin-top: var(--gap); }
+  .section h2 {
+    font-size: var(--fs-h2);
+    margin: 0 0 16px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    font-weight: 800;
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--c);
+  }
+  .section h2::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c), var(--m));
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
+  }
+  .chartbox {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    background: rgba(255,255,255,.015);
+  }
+  .chart-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .chart-title .small { font-size: var(--fs-small); color: var(--muted); }
+  svg { width: 100%; height: 260px; display: block; }
+
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-table);
+  }
+  .tbl th, .tbl td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    text-align: left;
+    vertical-align: middle;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+  .tbl th { 
+    color: var(--muted); 
+    font-weight: 700; 
+    background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
+    letter-spacing: 0.3px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+  }
+  .tbl tbody tr {
+    transition: all 0.2s ease;
+  }
+  .tbl tbody tr:hover { 
+    background: rgba(0,132,209,.08);
+    border-bottom-color: var(--c);
+  }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    display: inline-block;
+  }
+  .note {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .warn { color: rgba(255,242,0,.9); }
+
+  /* Autocomplete multi-select */
+  .ac {
+    position: relative;
+    width: 100%;
+    z-index: 10;
+  }
+  .ac-input {
+    width: 100%;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px 14px;
+    outline: none;
+    font-size: var(--fs-input);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+  }
+  .ac-input:hover {
+    background: rgba(255,255,255,.06);
+    border-color: var(--c);
+  }
+  .ac-input:focus {
+    border-color: var(--c);
+    background: rgba(255,255,255,.08);
+    box-shadow: 0 0 0 4px rgba(0,132,209,.15), var(--shadow-md);
+  }
+  .ac-dd {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10000;
+    box-shadow: var(--shadow-lg);
+    display: none;
+  }
+  .ac-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: var(--fs-input);
+  }
+  .ac-item:hover {
+    background: rgba(0,132,209,.15);
+    color: var(--c);
+  }
+  .ac-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .ac-tag {
+    background: rgba(0,132,209,.15);
+    border: 1px solid rgba(0,132,209,.3);
+    color: var(--text);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ac-tag-close {
+    cursor: pointer;
+    opacity: 0.6;
+    font-weight: bold;
+  }
+  .ac-tag-close:hover { opacity: 1; }
+
+/* Custom Heatmap Styles */
+#heatmap-container {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+#heatmap {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 4px;
+  table-layout: fixed;
+}
+
+#heatmap th, #heatmap td {
+  padding: 8px 4px;
+  text-align: center;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#heatmap .day-label {
+  text-align: left;
+  width: 80px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+#heatmap .hour-label {
+  color: var(--muted);
+  font-weight: 600;
+  height: 30px;
+}
+
+#heatmap .cell {
+  height: 32px;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+#heatmap .cell:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Tooltip style */
+.tippy-box {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow-lg) !important;
+  font-family: var(--sans) !important;
+  font-size: 13px !important;
+}
+
+.tippy-arrow {
+  color: var(--card) !important;
+}
+
+/* Heatmap Legend */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legend-scale {
+  display: flex;
+  gap: 3px;
+}
+
+.legend-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+/* Heatmap Summary Column */
+#heatmap .week-summary {
+  width: 90px;
+  border-left: 1px solid var(--border);
+  padding-left: 10px;
+}
+
+#heatmap .week-summary .wk-sum {
+  font-weight: 700;
+  color: var(--text);
+}
+
+#heatmap .week-summary .wk-pct {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Font Size Overrides for KPI values to prevent cutting */
+:root {
+  --heatmap-font-size: 11px;
+  --heatmap-font-label: 11px;
+  --heatmap-font-sum: 12px;
+  --heatmap-font-pct: 10px;
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --heatmap-font-size: 10px;
+    --heatmap-font-label: 10px;
+  }
+}
+
+#heatmap .cell-text {
+  font-size: var(--heatmap-font-size) !important;
+}
+
+#heatmap .day-label, #heatmap .hour-label {
+  font-size: var(--heatmap-font-label) !important;
+}
+
+#heatmap .week-summary .wk-sum{
+  font-size: var(--heatmap-font-sum) !important;
+}
+
+#heatmap .week-summary .wk-pct{
+  font-size: var(--heatmap-font-pct) !important;
+}
+
+/* =========================================
+   DESTAQUE EXECUTIVO – BLOCOS ESTRATÉGICOS
+   ========================================= */
+
+.band-highlight{
+  color: var(--c);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 640px){
+  .band-highlight{ font-size: 22px; }
+}
+
+.chartbox.highlight-card {
+  border: 2px solid rgba(30, 94, 255, 0.25);
+  box-shadow: 0 14px 32px rgba(30, 94, 255, 0.12);
+  transition: 0.2s ease;
+}
+
+.chartbox.highlight-card:hover {
+  box-shadow: 0 18px 40px rgba(30, 94, 255, 0.18);
+}
+
+.chartbox.highlight-card .band {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+
+/* Ajuste de alinhamento dos títulos de tickets */
+.chartbox.highlight-card .band.c,
+.chartbox.highlight-card .band.m {
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+
+/* Ajuste fino de alinhamento para igualar ao Top X Clientes */
+.band.y.band-highlight,
+.band.c.band-highlight,
+.band.m.band-highlight{
+  padding-left: 28px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div style="width:100%; display:flex; justify-content:center; align-items:center; margin:20px 0 24px 0;">
+<img src="diginet-logo.png"
+       alt="Diginet Graf"
+       style="height:80px; max-width:100%; object-fit:contain;" />
+</div>
+</div>
+
+<header>
+  <h1>Dashboard de Vendas</h1>
+  <div class="sub">
+    Base atual: <span class="pill" id="baseMeta">carregando…</span>
+    <span style="margin-left:10px">Colunas esperadas: <span class="pill">Data</span> <span class="pill">Cliente</span> <span class="pill">Consultor</span> <span class="pill">Bruto(R$)</span> <span class="pill">Líquido(R$)</span> <span class="pill">Produtos</span></span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div class="panel">
+      <div class="filters">
+        <div class="field full">
+          <label>Ano</label>
+          <div class="btns" id="yearBtns"></div>
+        </div>
+        <div class="field full" id="monthField" style="display:none;">
+          <label>Mês</label>
+          <div class="btns" id="monthBtns"></div>
+        </div>
+
+        <div class="field">
+          <label>Período inicial</label>
+          <input type="date" id="dateStart"/>
+        </div>
+        <div class="field">
+          <label>Período final</label>
+          <input type="date" id="dateEnd"/>
+        </div>
+
+        <div class="field">
+          <label>Importar base (CSV)</label>
+          <input type="file" id="fileInput" accept=".csv"/>
+        </div>
+
+        <div class="field wide">
+          <label>Cliente (Incluir)</label>
+          <div class="ac" id="cliInc_ac">
+            <input class="ac-input" id="cliInc_input" type="text" placeholder="Cliente" autocomplete="off"/>
+            <div class="ac-dd" id="cliInc_dd"></div>
+            <div class="ac-chips" id="cliInc_chips"></div>
+            <div class="ac-hint" id="cliInc_hint">Padrão: todos incluídos (campo vazio).</div>
+          </div>
+        </div>
+        <div class="field wide">
+          <label>Cliente (Excluir)</label>
+          <div class="ac" id="cliExc_ac">
+            <input class="ac-input" id="cliExc_input" type="text" placeholder="Excluir cliente" autocomplete="off"/>
+            <div class="ac-dd" id="cliExc_dd"></div>
+            <div class="ac-chips" id="cliExc_chips"></div>
+            <div class="ac-hint" id="cliExc_hint">Dica: exclui itens mantendo o restante.</div>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Consultor (Incluir)</label>
+          <div class="row">
+            <div class="btn" id="conAllBtn">Todos</div>
+            <div class="btn" id="conNoneBtn">Nenhum</div>
+            <div class="btn" id="conInvertBtn">Inverter</div>
+          </div>
+          <div class="btns" id="conBtns" style="margin-top:8px;"></div>
+        </div>
+
+
+        <div class="field wide">
+          <label>Produto (Incluir)</label>
+          <div class="ac" id="proInc_ac">
+            <input class="ac-input" id="proInc_input" type="text" placeholder="Produto" autocomplete="off"/>
+            <div class="ac-dd" id="proInc_dd"></div>
+            <div class="ac-chips" id="proInc_chips"></div>
+            <div class="ac-hint" id="proInc_hint">Padrão: todos incluídos (campo vazio).</div>
+          </div>
+        </div>
+        <div class="field wide">
+          <label>Produto (Excluir)</label>
+          <div class="ac" id="proExc_ac">
+            <input class="ac-input" id="proExc_input" type="text" placeholder="Excluir produto" autocomplete="off"/>
+            <div class="ac-dd" id="proExc_dd"></div>
+            <div class="ac-chips" id="proExc_chips"></div>
+            <div class="ac-hint" id="proExc_hint">Dica: exclui itens mantendo o restante.</div>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="row">
+            <div class="btn primary" id="applyBtn">Aplicar filtros</div>
+            <div class="btn" id="resetBtn">Resetar</div>
+            <div class="sub" id="status" style="margin-left:auto;">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards" id="kpis"></div>
+
+
+      <div class="section">
+        <h2 class="titleband tb-c">Resumo por consultor</h2>
+        <div class="chartbox">
+          <table class="tbl" id="consultorResumo"></table>
+        </div>
+      </div>
+
+<div class="section">
+        <h2>Outliers e auditoria rápida</h2>
+        <div class="stack" style="margin-top: var(--gap);">
+          <div class="chartbox highlight-card" style="padding:0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 0 14px;">
+              <div class="band m band-highlight">Top X Clientes</div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <label for="topCliInput" style="font-size: 12px; color: var(--muted); margin: 0;">Quantidade:</label>
+                <input type="number" id="topCliInput" min="1" max="100" value="10" style="width: 60px; padding: 6px 8px; background: rgba(255,255,255,.04); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 12px;" />
+              </div>
+            </div>
+            <div style="padding:12px 14px 14px 14px;">
+              <table class="tbl wrap" id="top10CliTbl"></table>
+              <div class="small" id="top10CliMeta" style="margin-top:6px; color:var(--muted)"></div>
+            </div>
+          </div>
+
+          <div class="chartbox highlight-card" style="padding:0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 0 14px;">
+              <div class="band y band-highlight">Top X Produtos</div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <label for="topProdInput" style="font-size: 12px; color: var(--muted); margin: 0;">Quantidade:</label>
+                <input type="number" id="topProdInput" min="1" max="100" value="10" style="width: 60px; padding: 6px 8px; background: rgba(255,255,255,.04); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 12px;" />
+              </div>
+            </div>
+            <div style="padding:12px 14px 14px 14px;">
+              <table class="tbl wrap" id="top10ProdTbl"></table>
+              <div class="small" id="top10ProdMeta" style="margin-top:6px; color:var(--muted)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="chartbox highlight-card" style="padding:0;">
+            <div class="band c band-highlight">Top 10 maiores tickets</div>
+            <div style="padding:12px 14px 14px 14px;">
+              <table class="tbl wrap" id="topOut"></table>
+              <div class="small" style="margin-top:6px; color:var(--muted);">Possíveis vendas especiais</div>
+            </div>
+          </div>
+          <div class="chartbox highlight-card" style="padding:0;">
+            <div class="band m band-highlight">Top 10 menores tickets</div>
+            <div style="padding:12px 14px 14px 14px;">
+              <table class="tbl wrap" id="lowOut"></table>
+              <div class="small" style="margin-top:6px; color:var(--muted);">Possível distorção ou baixo valor</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note warn" id="limitsNote"></div>
+      </div>
+
+      <div class="section">
+        <h2>Sazonalidade</h2>
+        <div class="chartbox">
+          <div class="chart-title">
+            <div><strong>Heatmap por dia da semana e semana do mês</strong> <span class="small">Receita líquida</span></div>
+            <div class="small" id="heatMeta"></div>
+          </div>
+          <div id="heatmap"></div>
+          <div class="note">Use isso para identificar dias bons e ruins e ajustar escala de produção e prospecção.</div>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="panel">
+      <h2 style="margin:0 0 10px;">Qualidade da base</h2>
+      <div class="sub" style="margin-bottom: 12px;">Validações automáticas para evitar decisão errada.</div>
+      <table class="tbl" id="dqTbl"></table>
+
+      <div class="note">
+        <strong>Importação:</strong> exporte sua planilha para <span class="pill">CSV</span> e use o campo “Importar base (CSV)”.<br/>
+        O arquivo original tinha CSV com separador <span class="pill">;</span>. O importador tenta detectar automaticamente.
+      </div>
+
+      <div class="note warn" id="xlsxNote"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   DADOS EMBUTIDOS (gerados a partir do arquivo anexado)
+   ========================================================== */
+let SALES = [{"date": "2026-01-06", "cliente": "KAYLANE AÇAI DO GORDIM", "consultor": "CLAUDIO.CASTRO", "bruto": 85.0, "liquido": 85.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 85.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 17.0, "liquido": 17.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 5.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 21.0, "liquido": 21.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 6.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "BLOCOS 10X15 4X0", "qty": 1, "value": 50.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "PLASTIFICACAO A4", "qty": 1, "value": 10.0}, {"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 10.0}]}, {"date": "2026-01-06", "cliente": "CECILIA - CRIO", "consultor": "CLAUDIO.CASTRO", "bruto": 182.01, "liquido": 182.01, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 182.01}]}, {"date": "2026-01-06", "cliente": "JAIRO - SJ CELULARES", "consultor": "CLAUDIO.CASTRO", "bruto": 80.0, "liquido": 80.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 80.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 50.0}]}, {"date": "2026-01-06", "cliente": "FERNANDO - DEDETIZADORA GLOBO", "consultor": "CLAUDIO.CASTRO", "bruto": 108.0, "liquido": 108.0, "produtos": [{"name": "CERTIFICADO", "qty": 1, "value": 108.0}]}, {"date": "2026-01-06", "cliente": "GRAFICA MARINHO - GEORGIA", "consultor": "CLAUDIO.CASTRO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A3", "qty": 1, "value": 45.0}]}, {"date": "2026-01-02", "cliente": "ALAN", "consultor": "MARCOS.ANTONIO1", "bruto": 317.52, "liquido": 317.52, "produtos": [{"name": "PVC 2MM FRENTE E VERSO LAMINADO - REVENDA L: 0,21 X A: 0,30", "qty": 8, "value": 105.84}, {"name": "PVC 2MM FRENTE E VERSO LAMINADO - REVENDA L: 0,30 X A: 0,42", "qty": 8, "value": 211.68}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 28.0, "liquido": 28.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 28.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 100.0, "liquido": 100.0, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 100.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 40.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 111.0, "liquido": 111.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 49.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 62.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 35.0, "liquido": 35.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 1, "value": 35.0}]}, {"date": "2026-01-07", "cliente": "MONALISA - DINDIN GOURMET", "consultor": "CLAUDIO.CASTRO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 135.0, "liquido": 135.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ LOCALIZADO", "qty": 1, "value": 135.0}]}, {"date": "2026-01-07", "cliente": "CECILIA - CRIO", "consultor": "CLAUDIO.CASTRO", "bruto": 280.31, "liquido": 280.31, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 280.31}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 130.0, "liquido": 130.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 52, "value": 130.0}]}, {"date": "2026-01-06", "cliente": "EDUARDO CASTELLANI - ADESIVOS", "consultor": "MATHEUS.LEVINO", "bruto": 210.0, "liquido": 210.0, "produtos": [{"name": "55 SO RECORTE", "qty": 14, "value": 210.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 8.0, "liquido": 8.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 2, "value": 8.0}]}, {"date": "2026-01-07", "cliente": "GRAFICA MARINHO - GEORGIA", "consultor": "MARCOS.ANTONIO1", "bruto": 40.02, "liquido": 40.02, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,60 X A: 1,10", "qty": 1, "value": 21.12}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,70 X A: 1,00", "qty": 1, "value": 18.9}]}, {"date": "2026-01-07", "cliente": "JERSINO - PINNOS BUFFET", "consultor": "CLAUDIO.CASTRO", "bruto": 24.0, "liquido": 24.0, "produtos": [{"name": "ORÇAMENTO", "qty": 1, "value": 24.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 1, "value": 30.0}]}, {"date": "2026-01-07", "cliente": "DEOCLECIO", "consultor": "CLAUDIO.CASTRO", "bruto": 70.0, "liquido": 70.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 1, "value": 70.0}]}, {"date": "2026-01-06", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 15.55, "liquido": 15.55, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 0,90 X A: 0,64", "qty": 1, "value": 15.55}]}, {"date": "2026-01-07", "cliente": "RD GRAFICA", "consultor": "MARCOS.ANTONIO1", "bruto": 37.8, "liquido": 37.8, "produtos": [{"name": "64 BANNER 70AX120L", "qty": 1, "value": 37.8}]}, {"date": "2026-01-07", "cliente": "FD GRAFICA - CAROLINE BRITO DOS SANTOS BATISTA", "consultor": "MARCOS.ANTONIO1", "bruto": 90.9, "liquido": 90.9, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,04 X A: 2,30", "qty": 1, "value": 90.9}]}, {"date": "2026-01-07", "cliente": "ADRIANA LOBO", "consultor": "MARCOS.ANTONIO1", "bruto": 996.24, "liquido": 996.24, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,94 X A: 2,61", "qty": 1, "value": 79.74}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,94 X A: 2,61", "qty": 4, "value": 318.94}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,94 X A: 2,61", "qty": 7, "value": 558.15}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,94 X A: 1,29", "qty": 1, "value": 39.41}]}, {"date": "2026-01-07", "cliente": "CANTINHO DA XEROX", "consultor": "MARCOS.ANTONIO1", "bruto": 128.97, "liquido": 128.97, "produtos": [{"name": "09 ADESIVO RECORTE DEPILADO E MASCARADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 25.0}, {"name": "09 ADESIVO RECORTE DEPILADO E MASCARADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 25.0}, {"name": "63 BANNER PERSONALIZADO", "qty": 1, "value": 57.37}, {"name": "62 BANNER 60LX80A", "qty": 1, "value": 21.6}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 92.0, "liquido": 92.0, "produtos": [{"name": "DISPLAY DE MESA 10X15", "qty": 1, "value": 30.0}, {"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 20.0}, {"name": "CONTRATO DE COMPRA E VENDA", "qty": 1, "value": 30.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-07", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-07", "cliente": "GNB - GLADSTONE", "consultor": "CLAUDIO.CASTRO", "bruto": 35.0, "liquido": 35.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 20.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-07", "cliente": "FLAVIO", "consultor": "MARCOS.ANTONIO1", "bruto": 285.2, "liquido": 285.2, "produtos": [{"name": "PADRAO PRETO", "qty": 1, "value": 23.0}, {"name": "23 PVC 2MM ADESIVADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 0,60 X A: 0,60", "qty": 1, "value": 21.6}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 0,70 X A: 0,50", "qty": 1, "value": 21.0}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 1,00 X A: 0,50", "qty": 1, "value": 30.0}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 1,00 X A: 0,50", "qty": 1, "value": 30.0}, {"name": "40 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA 2M² L: 1,20 X A: 0,60", "qty": 1, "value": 39.6}, {"name": "40 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA 2M² L: 2,00 X A: 1,00", "qty": 1, "value": 110.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 4.0}, {"name": "PLASTIFICACAO A5", "qty": 1, "value": 6.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 2.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 10.0, "liquido": 10.0, "produtos": [{"name": "ESCANEAMENTO", "qty": 1, "value": 10.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}, {"name": "XEROX COLORIDA", "qty": 4, "value": 4.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 48.5, "liquido": 48.5, "produtos": [{"name": "PLASTIFICACAO A3", "qty": 1, "value": 16.0}, {"name": "IMPRESSAO COMUM A4", "qty": 13, "value": 32.5}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 19.0, "liquido": 19.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "XEROX COLORIDA", "qty": 4, "value": 4.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 68.0, "liquido": 68.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 48.0}, {"name": "SERVIÇO DE ARTE", "qty": 1, "value": 20.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 222.9, "liquido": 222.9, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 461, "value": 184.4}, {"name": "IMPRESSAO COUCHE 60 A4", "qty": 7, "value": 24.5}, {"name": "ENCADERNACAO", "qty": 2, "value": 14.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 4, "value": 16.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 130.0, "liquido": 130.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 130.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 50.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 95.0, "liquido": 95.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ TOTAL 4X4", "qty": 1, "value": 95.0}]}, {"date": "2026-01-07", "cliente": "GGNET INTERNET BANDA LARGA", "consultor": "MATHEUS.LEVINO", "bruto": 640.0, "liquido": 640.0, "produtos": [{"name": "PANFLETOS COUCHE 90 10X15 4X4 1000", "qty": 1, "value": 640.0}]}, {"date": "2026-01-08", "cliente": "BRUNO - REFRIGERAÇÃO", "consultor": "CLAUDIO.CASTRO", "bruto": 65.0, "liquido": 65.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 60.0}, {"name": "ENCADERNACAO", "qty": 1, "value": 5.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 140.0, "liquido": 140.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}, {"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 60.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "BLOCOS 10X15 4X0", "qty": 1, "value": 50.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 35.0, "liquido": 35.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 35.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 50.0}]}, {"date": "2026-01-08", "cliente": "VALDENIR ART 10", "consultor": "MARCOS.ANTONIO1", "bruto": 166.25, "liquido": 166.25, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 166.25}]}, {"date": "2026-01-08", "cliente": "MONALISA - DINDIN GOURMET", "consultor": "CLAUDIO.CASTRO", "bruto": 18.0, "liquido": 18.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 18.0}]}, {"date": "2026-01-08", "cliente": "GB COMUNICAÇÃO VISUAL GLERISTON SOUSA", "consultor": "MARCOS.ANTONIO1", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 40.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 165.0, "liquido": 165.0, "produtos": [{"name": "PANFLETOS COUCHE 90 10X15 4X0 5000", "qty": 1, "value": 125.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 40.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 20.0}]}, {"date": "2026-01-08", "cliente": "DIOGENES (FORT PLAK)", "consultor": "MARCOS.ANTONIO1", "bruto": 533.9, "liquido": 533.9, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 3,04 X A: 1,02", "qty": 1, "value": 99.23}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 4,70 X A: 1,52", "qty": 1, "value": 228.61}, {"name": "23 PVC 2MM ADESIVADO - REVENDA L: 0,50 X A: 0,50", "qty": 1, "value": 27.5}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 1,04 X A: 0,52", "qty": 1, "value": 17.31}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 3,90 X A: 1,02", "qty": 1, "value": 127.3}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,52 X A: 1,02", "qty": 2, "value": 33.95}]}, {"date": "2026-01-09", "cliente": "CAMILE - GALETERIA", "consultor": "CLAUDIO.CASTRO", "bruto": 906.0, "liquido": 906.0, "produtos": [{"name": "PLACA EM METALON L: 1,00 X A: 1,00", "qty": 1, "value": 906.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 55.0, "liquido": 55.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "ADESIVO PAPEL A4", "qty": 1, "value": 40.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 40.0}]}, {"date": "2026-01-09", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 56.45, "liquido": 56.45, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 2,03 X A: 1,03", "qty": 1, "value": 56.45}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 28.0, "liquido": 28.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 28.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 25.0, "liquido": 25.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "IMPRESSAO COMUM A4", "qty": 10, "value": 10.0}]}, {"date": "2026-01-06", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 7.0, "liquido": 7.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 7, "value": 7.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 0,50 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "PLASTIFICACAO DOCUMENTO", "qty": 6, "value": 24.0}, {"name": "PLASTIFICACAO DOCUMENTO", "qty": 1, "value": 6.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 40.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "ENCADERNACAO", "qty": 2, "value": 16.0}]}, {"date": "2026-01-08", "cliente": "REINALDO", "consultor": "MATHEUS.LEVINO", "bruto": 10.0, "liquido": 10.0, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 3, "value": 12.0}, {"name": "IMPRESSAO COMUM A4", "qty": 11, "value": 11.0}, {"name": "IMPRESSAO COUCHE 80 A3", "qty": 1, "value": 7.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "FOTOS 10X15", "qty": 3, "value": 12.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 42.0, "liquido": 42.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "ENVELOPE A4", "qty": 3, "value": 3.0}, {"name": "IMPRESSAO COMUM A4", "qty": 32, "value": 24.0}]}, {"date": "2026-01-09", "cliente": "DION MARCENEIRO", "consultor": "MATHEUS.LEVINO", "bruto": 34.0, "liquido": 34.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 2, "value": 34.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 143.0, "liquido": 143.0, "produtos": [{"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 27.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 17.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 3, "value": 30.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 2, "value": 54.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 13.0, "liquido": 13.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}, {"name": "XEROX COLORIDA", "qty": 1, "value": 1.0}]}, {"date": "2026-01-09", "cliente": "STHEFANNY MAGALHÃES", "consultor": "MATHEUS.LEVINO", "bruto": 163.5, "liquido": 163.5, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 15, "value": 75.0}, {"name": "PLASTIFICACAO A4", "qty": 15, "value": 82.5}, {"name": "ENCADERNACAO", "qty": 1, "value": 6.0}]}, {"date": "2026-01-07", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 0,50 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 2, "value": 8.0}, {"name": "PLASTIFICACAO A4", "qty": 2, "value": 8.0}]}, {"date": "2026-01-09", "cliente": "USINA 6M", "consultor": "MATHEUS.LEVINO", "bruto": 256.0, "liquido": 256.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 8, "value": 256.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-08", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 102.0, "liquido": 102.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 102.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 30.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "XEROX COLORIDA", "qty": 5, "value": 5.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 8.0, "liquido": 8.0, "produtos": [{"name": "XEROX COLORIDA", "qty": 8, "value": 8.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 4.0, "liquido": 4.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 4.0}]}, {"date": "2026-01-09", "cliente": "FERNANDO - DEDETIZADORA GLOBO", "consultor": "CLAUDIO.CASTRO", "bruto": 74.0, "liquido": 74.0, "produtos": [{"name": "CERTIFICADO", "qty": 1, "value": 74.0}]}, {"date": "2026-01-08", "cliente": "MILLE ART", "consultor": "MARCOS.ANTONIO1", "bruto": 32.72, "liquido": 32.72, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 1,42 X A: 0,72", "qty": 1, "value": 32.72}]}, {"date": "2026-01-09", "cliente": "MILLE ART", "consultor": "MARCOS.ANTONIO1", "bruto": 10.8, "liquido": 10.8, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 0,40", "qty": 1, "value": 10.8}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 68.0, "liquido": 68.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 68.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 10.0, "liquido": 10.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 10.0}]}, {"date": "2026-01-09", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 28.0, "liquido": 28.0, "produtos": [{"name": "CONTRATO DE LOCACAO", "qty": 1, "value": 25.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 3.0}]}, {"date": "2026-01-10", "cliente": "CANTINHO DA XEROX", "consultor": "MARCOS.ANTONIO1", "bruto": 364.75, "liquido": 364.75, "produtos": [{"name": "10 ADESIVO LAMINADO - REVENDA L: 0,54 X A: 0,43", "qty": 1, "value": 11.38}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,54 X A: 0,43", "qty": 1, "value": 6.27}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}, {"name": "POSTER EM LONA 80X110CM - REVENDA", "qty": 1, "value": 104.0}, {"name": "10 ADESIVO LAMINADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}, {"name": "64 BANNER 70AX120L", "qty": 1, "value": 37.8}, {"name": "30 BANNER 40LX60A", "qty": 1, "value": 20.0}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}, {"name": "09 ADESIVO RECORTE DEPILADO E MASCARADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 25.0}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}, {"name": "63 BANNER PERSONALIZADO", "qty": 1, "value": 72.9}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,70 X A: 1,20", "qty": 1, "value": 22.4}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 11.0, "liquido": 11.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 11, "value": 11.0}]}, {"date": "2026-01-08", "cliente": "FD GRAFICA - CAROLINE BRITO DOS SANTOS BATISTA", "consultor": "MARCOS.ANTONIO1", "bruto": 22.4, "liquido": 22.4, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,70 X A: 1,00", "qty": 1, "value": 22.4}]}, {"date": "2026-01-09", "cliente": "ELIANO", "consultor": "MARCOS.ANTONIO1", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "10 ADESIVO LAMINADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-12", "cliente": "CICERO CABELEIREIRO", "consultor": "CLAUDIO.CASTRO", "bruto": 130.0, "liquido": 130.0, "produtos": [{"name": "BANNER COM ACABAMENTO", "qty": 1, "value": 130.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 70.0, "liquido": 70.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 70.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-09", "cliente": "LUCAS - POUSADA PAIVA", "consultor": "MATHEUS.LEVINO", "bruto": 580.5, "liquido": 580.5, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 112.5}, {"name": "IMPRESSAO COUCHE 60 A3", "qty": 72, "value": 468.0}]}, {"date": "2026-01-09", "cliente": "VICTTORIA KETLYN", "consultor": "MATHEUS.LEVINO", "bruto": 43.5, "liquido": 43.5, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 43.5}]}, {"date": "2026-01-05", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 2509.99, "liquido": 2509.99, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 2509.99}]}, {"date": "2026-01-06", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 1567.96, "liquido": 1567.96, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 1567.96}]}, {"date": "2026-01-07", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 2244.24, "liquido": 2244.24, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 2244.24}]}, {"date": "2026-01-08", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 5823.31, "liquido": 5823.31, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 2985.05}, {"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 2838.26}]}, {"date": "2026-01-26", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 623.4, "liquido": 623.4, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 623.4}]}, {"date": "2026-01-27", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 498.72, "liquido": 498.72, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 498.72}]}, {"date": "2026-01-28", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 997.44, "liquido": 997.44, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 997.44}]}, {"date": "2026-01-29", "cliente": "CEMAG - CEARA MAQUINAS AGRICOLAS LTDA", "consultor": "MATHEUS.LEVINO", "bruto": 124.68, "liquido": 124.68, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 124.68}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 30.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 25.0, "liquido": 25.0, "produtos": [{"name": "CONTRATO DE LOCACAO", "qty": 1, "value": 25.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 30.0}]}, {"date": "2026-01-12", "cliente": "CLAUDIO RAFE", "consultor": "MARCOS.ANTONIO1", "bruto": 700.0, "liquido": 700.0, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 700.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 63.75, "liquido": 63.75, "produtos": [{"name": "ENCADERNACAO", "qty": 1, "value": 63.75}]}, {"date": "2026-01-12", "cliente": "GENEILTON", "consultor": "CLAUDIO.CASTRO", "bruto": 83.0, "liquido": 83.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 83.0}]}, {"date": "2026-01-12", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "25 PVC 1MM (FOLHA M2) - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 30.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 170.0, "liquido": 170.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ TOTAL 4X4", "qty": 1, "value": 170.0}]}, {"date": "2026-01-12", "cliente": "GRAFICA MARINHO - GEORGIA", "consultor": "MARCOS.ANTONIO1", "bruto": 122.76, "liquido": 122.76, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 0,30 X A: 0,45", "qty": 8, "value": 32.4}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,55 X A: 0,85", "qty": 1, "value": 15.9}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,85 X A: 1,00", "qty": 1, "value": 25.5}, {"name": "19 LONA SEM ACABAMENTO - REVENDA L: 1,80 X A: 0,80", "qty": 1, "value": 48.96}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 130.0, "liquido": 130.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 130.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-12", "cliente": "ACADEMIA TOP LIFE", "consultor": "MATHEUS.LEVINO", "bruto": 250.0, "liquido": 250.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 200, "value": 250.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 3.0, "liquido": 3.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 2.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 1.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 4.0, "liquido": 4.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 4.0}]}, {"date": "2026-01-12", "cliente": "REBECA VIEIRA - CILIOS E SOBRANCELHAS", "consultor": "MATHEUS.LEVINO", "bruto": 85.9, "liquido": 85.9, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 3, "value": 80.4}, {"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 5.5}]}, {"date": "2026-01-13", "cliente": "JOICE - FRIBAL", "consultor": "CLAUDIO.CASTRO", "bruto": 80.0, "liquido": 80.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}]}, {"date": "2026-01-13", "cliente": "MILLE ART", "consultor": "MARCOS.ANTONIO1", "bruto": 29.4, "liquido": 29.4, "produtos": [{"name": "37 BANNER 60LX100A", "qty": 1, "value": 29.4}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 135.0, "liquido": 135.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ LOCALIZADO", "qty": 1, "value": 135.0}]}, {"date": "2026-01-13", "cliente": "FLAVIO", "consultor": "MARCOS.ANTONIO1", "bruto": 72.0, "liquido": 72.0, "produtos": [{"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 1,00 X A: 0,60", "qty": 1, "value": 36.0}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 0,60 X A: 0,40", "qty": 1, "value": 36.0}]}, {"date": "2026-01-13", "cliente": "MARCELO MARTINS", "consultor": "CLAUDIO.CASTRO", "bruto": 149.0, "liquido": 149.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 140.0}, {"name": "ADESIVO PAPEL A4", "qty": 1, "value": 9.0}]}, {"date": "2026-01-13", "cliente": "LENICE DO BAIRRO", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 20.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 6.0, "liquido": 6.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 6.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 67.5, "liquido": 67.5, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 30, "value": 67.5}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 60.0, "liquido": 60.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 60.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 30.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 80.0, "liquido": 80.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}]}, {"date": "2026-01-13", "cliente": "ART GRAF", "consultor": "MARCOS.ANTONIO1", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 0,50", "qty": 1, "value": 15.0}]}, {"date": "2026-01-13", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 53.1, "liquido": 53.1, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,77", "qty": 1, "value": 53.1}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 89.0, "liquido": 89.0, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 89.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 40.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 21.5, "liquido": 21.5, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 21.5}]}, {"date": "2026-01-14", "cliente": "ISRAEL PINHEIRO BARROSO - GRÁFICA PINHEIRO", "consultor": "MARCOS.ANTONIO1", "bruto": 71.0, "liquido": 70.0, "produtos": [{"name": "44 TRANSPARENTE COM CORTE E CONTORNO - REVENDA L: 0,97 X A: 1,22", "qty": 1, "value": 71.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 21.0, "liquido": 21.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 21.0}]}, {"date": "2026-01-14", "cliente": "GB COMUNICAÇÃO VISUAL GLERISTON SOUSA", "consultor": "MARCOS.ANTONIO1", "bruto": 134.96, "liquido": 134.96, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 3,71 X A: 0,97", "qty": 1, "value": 107.96}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,50 X A: 0,60", "qty": 1, "value": 27.0}]}, {"date": "2026-01-14", "cliente": "ADRIANA LOBO", "consultor": "MARCOS.ANTONIO1", "bruto": 1571.39, "liquido": 1571.39, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,95 X A: 2,63", "qty": 8, "value": 679.59}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,95 X A: 2,63", "qty": 8, "value": 679.59}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,95 X A: 2,63", "qty": 2, "value": 169.9}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,95 X A: 1,31", "qty": 1, "value": 42.31}]}, {"date": "2026-01-14", "cliente": "DUDU ART E IMPRESSÃO ANDERSON PATRÍCK ROCHA VASCONCELOS", "consultor": "MARCOS.ANTONIO1", "bruto": 38.22, "liquido": 38.5, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,05 X A: 0,70", "qty": 1, "value": 38.22}]}, {"date": "2026-01-14", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 20.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 62.0, "liquido": 62.0, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 62.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 18.0, "liquido": 18.0, "produtos": [{"name": "XEROX COLORIDA", "qty": 1, "value": 18.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 77.0, "liquido": 77.0, "produtos": [{"name": "LONA SEM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 77.0}]}, {"date": "2026-01-14", "cliente": "VENÊ - ESCOLA", "consultor": "CLAUDIO.CASTRO", "bruto": 105.0, "liquido": 105.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 105.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 60.0, "liquido": 60.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 60.0}]}, {"date": "2026-01-15", "cliente": "AUDREY - VETERINÁRIA", "consultor": "CLAUDIO.CASTRO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "SERVIÇO DE ARTE", "qty": 1, "value": 45.0}]}, {"date": "2026-01-15", "cliente": "IGOR XICÓ NET", "consultor": "CLAUDIO.CASTRO", "bruto": 165.0, "liquido": 165.0, "produtos": [{"name": "PANFLETOS COUCHE 90 10X15 4X0 5000", "qty": 1, "value": 85.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 25.0, "liquido": 25.0, "produtos": [{"name": "CONTRATO DE LOCACAO", "qty": 1, "value": 25.0}]}, {"date": "2026-01-15", "cliente": "JESSICA MM PACOCA", "consultor": "CLAUDIO.CASTRO", "bruto": 175.0, "liquido": 175.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ LOCALIZADO", "qty": 1, "value": 135.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 40.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 25.0, "liquido": 25.0, "produtos": [{"name": "CONTRATO DE COMPRA E VENDA", "qty": 1, "value": 25.0}]}, {"date": "2026-01-15", "cliente": "GB COMUNICAÇÃO VISUAL GLERISTON SOUSA", "consultor": "MARCOS.ANTONIO1", "bruto": 10.0, "liquido": 10.0, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}]}, {"date": "2026-01-15", "cliente": "BRUNO - LEITURA EM DIA", "consultor": "CLAUDIO.CASTRO", "bruto": 142.0, "liquido": 142.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 142.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 100.0, "liquido": 100.0, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 90.0}, {"name": "FOTOS 3X4", "qty": 1, "value": 10.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 31.5, "liquido": 31.5, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 31.5}]}, {"date": "2026-01-15", "cliente": "DUDU ART E IMPRESSÃO ANDERSON PATRÍCK ROCHA VASCONCELOS", "consultor": "MARCOS.ANTONIO1", "bruto": 124.26, "liquido": 124.26, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 0,92 X A: 1,15", "qty": 1, "value": 63.48}, {"name": "05 ADESIVO PERFURADO - REVENDA L: 1,14 X A: 0,73", "qty": 1, "value": 40.78}, {"name": "09 ADESIVO RECORTE DEPILADO E MASCARADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 20.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 21.5, "liquido": 21.5, "produtos": [{"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 21.5}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 11.0, "liquido": 11.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 2.0}, {"name": "IMPRESSAO COMUM A4", "qty": 9, "value": 9.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 109.0, "liquido": 109.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 4.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 4.0}, {"name": "IMPRESSAO COUCHE 80 A4", "qty": 3, "value": 12.0}, {"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 4.0}, {"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 4.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 3, "value": 81.0}]}, {"date": "2026-01-14", "cliente": "RAISSA LIRA - ORBIS ENGENHARIA", "consultor": "MATHEUS.LEVINO", "bruto": 290.0, "liquido": 290.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 290.0}]}, {"date": "2026-01-14", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 49.0, "liquido": 49.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 34.0}, {"name": "SERVIÇO DE ARTE", "qty": 1, "value": 15.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 33.0, "liquido": 33.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 2, "value": 8.0}, {"name": "IMPRESSAO ADESIVO A3", "qty": 1, "value": 25.0}]}, {"date": "2026-01-15", "cliente": "ADRIANA LOBO", "consultor": "MATHEUS.LEVINO", "bruto": 7.0, "liquido": 7.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 2, "value": 7.0}]}, {"date": "2026-01-15", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-15", "cliente": "GABRIEL ETIQUETAS TERCEIRIZANTE", "consultor": "MATHEUS.LEVINO", "bruto": 64.8, "liquido": 64.8, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 64.8}]}, {"date": "2026-01-16", "cliente": "WAGNER PEREIRA ALVES", "consultor": "MARCOS.ANTONIO1", "bruto": 23.8, "liquido": 23.8, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 0,70 X A: 1,00", "qty": 1, "value": 23.8}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 81.0, "liquido": 81.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 81.0}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "LONA COM ILHOES L: 1,00 X A: 1,00", "qty": 1, "value": 50.0}]}, {"date": "2026-01-16", "cliente": "VIVIANE FRANÇA AGUIAR", "consultor": "MARCOS.ANTONIO1", "bruto": 40.07, "liquido": 40.07, "produtos": [{"name": "10 ADESIVO LAMINADO - REVENDA L: 0,30 X A: 0,42", "qty": 6, "value": 40.07}]}, {"date": "2026-01-16", "cliente": "EVANDRO - PRIMO", "consultor": "CLAUDIO.CASTRO", "bruto": 22.0, "liquido": 22.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 22.0}]}, {"date": "2026-01-16", "cliente": "MEVILA", "consultor": "CLAUDIO.CASTRO", "bruto": 28.0, "liquido": 28.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 1, "value": 28.0}]}, {"date": "2026-01-16", "cliente": "WILLIAME - CASA DO AÇAI", "consultor": "CLAUDIO.CASTRO", "bruto": 128.0, "liquido": 128.0, "produtos": [{"name": "ADESIVO LAMINADO L: 1,00 X A: 1,00", "qty": 1, "value": 128.0}]}, {"date": "2026-01-16", "cliente": "ERNANI - CORRETOR", "consultor": "CLAUDIO.CASTRO", "bruto": 100.0, "liquido": 100.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 100.0}]}, {"date": "2026-01-16", "cliente": "JERSINO - PINNOS BUFFET", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "ORÇAMENTO", "qty": 1, "value": 20.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 177.0, "liquido": 177.0, "produtos": [{"name": "WIND BANNER", "qty": 1, "value": 137.5}, {"name": "63 BANNER PERSONALIZADO", "qty": 1, "value": 39.5}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 50.0, "liquido": 50.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 50.0}]}, {"date": "2026-01-12", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 32.0, "liquido": 32.0, "produtos": [{"name": "PLASTIFICACAO A3", "qty": 2, "value": 32.0}]}, {"date": "2026-01-16", "cliente": "ERISSON", "consultor": "MARCOS.ANTONIO1", "bruto": 38.0, "liquido": 38.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 38.0}]}, {"date": "2026-01-16", "cliente": "BRUNO - LEITURA EM DIA", "consultor": "CLAUDIO.CASTRO", "bruto": 147.0, "liquido": 147.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 147.0}]}, {"date": "2026-01-16", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-16", "cliente": "GB COMUNICAÇÃO VISUAL GLERISTON SOUSA", "consultor": "MARCOS.ANTONIO1", "bruto": 142.95, "liquido": 142.95, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,75 X A: 0,95", "qty": 2, "value": 99.75}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,20 X A: 0,60", "qty": 2, "value": 43.2}]}, {"date": "2026-01-16", "cliente": "VALDO COSTA", "consultor": "CLAUDIO.CASTRO", "bruto": 24.0, "liquido": 24.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 24.0}]}, {"date": "2026-01-16", "cliente": "JERSINO - PINNOS BUFFET", "consultor": "CLAUDIO.CASTRO", "bruto": 10.0, "liquido": 10.0, "produtos": [{"name": "ORÇAMENTO", "qty": 1, "value": 10.0}]}, {"date": "2026-01-16", "cliente": "MAKSON - ADVOCACIA", "consultor": "CLAUDIO.CASTRO", "bruto": 42.0, "liquido": 42.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 42.0}]}, {"date": "2026-01-16", "cliente": "GRAFICA MARINHO - GEORGIA", "consultor": "MARCOS.ANTONIO1", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "06 ADESIVO TRANSPARENTE - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-19", "cliente": "GNB - GLADSTONE", "consultor": "CLAUDIO.CASTRO", "bruto": 121.0, "liquido": 121.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 60.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 61.0}]}, {"date": "2026-01-19", "cliente": "VALDENIR ART 10", "consultor": "MARCOS.ANTONIO1", "bruto": 42.9, "liquido": 42.9, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 42.9}]}, {"date": "2026-01-19", "cliente": "BRUNO - LEITURA EM DIA", "consultor": "CLAUDIO.CASTRO", "bruto": 147.0, "liquido": 147.0, "produtos": [{"name": "BLOCOS 15X20 4X0", "qty": 1, "value": 147.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 31.0, "liquido": 31.0, "produtos": [{"name": "ADESIVO PAPEL A4", "qty": 1, "value": 10.0}, {"name": "IMPRESSAO ADESIVO A3", "qty": 1, "value": 21.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 6.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 10.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 25.0, "liquido": 25.0, "produtos": [{"name": "IMPRESSAO ADESIVO A3", "qty": 1, "value": 25.0}]}, {"date": "2026-01-19", "cliente": "THYARA SOUSA", "consultor": "BEATRIZ.MIGUEL", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 45.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 80.0, "liquido": 80.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 42.0, "liquido": 42.0, "produtos": [{"name": "SERVIÇO DE ARTE", "qty": 1, "value": 10.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 10.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 22.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 6, "value": 30.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 8.0, "liquido": 8.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 2, "value": 8.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 2.0, "liquido": 2.0, "produtos": [{"name": "XEROX COLORIDA", "qty": 2, "value": 2.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 10.0}, {"name": "PLASTIFICACAO A4", "qty": 1, "value": 10.0}]}, {"date": "2026-01-19", "cliente": "MICHEL PETISCOS", "consultor": "CLAUDIO.CASTRO", "bruto": 285.0, "liquido": 285.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 285.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 45.0, "liquido": 45.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 35.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 32.0, "liquido": 32.0, "produtos": [{"name": "FOTOS 3X4", "qty": 2, "value": 30.0}, {"name": "XEROX COLORIDA", "qty": 2, "value": 2.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "XEROX COLORIDA", "qty": 5, "value": 5.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 12, "value": 12.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 12, "value": 12.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-13", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 31.25, "liquido": 31.25, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": null, "value": 31.25}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 139.0, "liquido": 139.0, "produtos": [{"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 2, "value": 34.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 35.0}, {"name": "PVC 3MM ADESIVADO L: 1,00 X A: 1,00", "qty": 2, "value": 70.0}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 40.0, "liquido": 40.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 10, "value": 40.0}]}, {"date": "2026-01-16", "cliente": "DOUGLAS - DR DOCES", "consultor": "MATHEUS.LEVINO", "bruto": 35.0, "liquido": 35.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 7, "value": 35.0}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 80.0, "liquido": 80.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 80.0}]}, {"date": "2026-01-19", "cliente": "REINALDO", "consultor": "MATHEUS.LEVINO", "bruto": 24.0, "liquido": 24.0, "produtos": [{"name": "11 BANNER COM ACABAMENTO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 24.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 24.0, "liquido": 24.0, "produtos": [{"name": "FOTOS 3X4", "qty": 2, "value": 24.0}]}, {"date": "2026-01-19", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 18.0, "liquido": 18.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 12, "value": 12.0}, {"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 6.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 100.0, "liquido": 100.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 100.0}]}, {"date": "2026-01-20", "cliente": "DUDU ART E IMPRESSÃO ANDERSON PATRÍCK ROCHA VASCONCELOS", "consultor": "MARCOS.ANTONIO1", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "30 BANNER 40LX60A", "qty": 1, "value": 20.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-20", "cliente": "JERSINO - PINNOS BUFFET", "consultor": "CLAUDIO.CASTRO", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "ORÇAMENTO", "qty": 1, "value": 16.0}]}, {"date": "2026-01-20", "cliente": "GB COMUNICAÇÃO VISUAL GLERISTON SOUSA", "consultor": "MARCOS.ANTONIO1", "bruto": 91.01, "liquido": 91.01, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,97 X A: 0,77", "qty": 2, "value": 91.01}]}, {"date": "2026-01-20", "cliente": "VIVIANE FRANÇA AGUIAR", "consultor": "MARCOS.ANTONIO1", "bruto": 98.85, "liquido": 98.85, "produtos": [{"name": "10 ADESIVO LAMINADO - REVENDA L: 0,30 X A: 0,42", "qty": 12, "value": 80.14}, {"name": "26 PVC 2MM (FOLHA M2) - REVENDA L: 0,30 X A: 0,42", "qty": 3, "value": 18.71}]}, {"date": "2026-01-20", "cliente": "JEFTE PECEM", "consultor": "CLAUDIO.CASTRO", "bruto": 48.0, "liquido": 48.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 48.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 16.0, "liquido": 16.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 1, "value": 16.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 30.0}]}, {"date": "2026-01-20", "cliente": "AMANDA - DUMBBELLS", "consultor": "CLAUDIO.CASTRO", "bruto": 120.0, "liquido": 120.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 120.0}]}, {"date": "2026-01-20", "cliente": "GNB - GLADSTONE", "consultor": "MARCOS.ANTONIO1", "bruto": 58.69, "liquido": 58.69, "produtos": [{"name": "19 LONA SEM ACABAMENTO - REVENDA L: 1,81 X A: 0,71", "qty": 1, "value": 43.69}, {"name": "10 ADESIVO LAMINADO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 15.0, "liquido": 15.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 19.0, "liquido": 19.0, "produtos": [{"name": "FOTOS 3X4", "qty": 1, "value": 15.0}, {"name": "XEROX COLORIDA", "qty": 4, "value": 4.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 18.0, "liquido": 18.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 18.0}]}, {"date": "2026-01-20", "cliente": "IDEALIZE PRINTS", "consultor": "MARCOS.ANTONIO1", "bruto": 448.23, "liquido": 448.23, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 0,51 X A: 0,71", "qty": 3, "value": 32.59}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,61 X A: 0,41", "qty": 3, "value": 22.51}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,71 X A: 1,01", "qty": 2, "value": 43.03}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,01 X A: 1,01", "qty": 1, "value": 30.6}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,21 X A: 0,51", "qty": 1, "value": 18.51}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,21 X A: 0,81", "qty": 2, "value": 58.81}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,82 X A: 0,61", "qty": 2, "value": 30.01}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,60 X A: 0,60", "qty": 1, "value": 10.8}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,91 X A: 0,61", "qty": 1, "value": 16.65}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,31 X A: 0,91", "qty": 1, "value": 35.76}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,61 X A: 0,91", "qty": 1, "value": 16.65}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,81 X A: 1,21", "qty": 1, "value": 29.4}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,01 X A: 1,51", "qty": 1, "value": 45.75}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,40 X A: 0,90", "qty": 1, "value": 10.8}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,51 X A: 1,02", "qty": 1, "value": 15.61}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,61 X A: 0,41", "qty": 1, "value": 7.5}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,71 X A: 0,31", "qty": 1, "value": 6.6}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,91 X A: 0,61", "qty": 1, "value": 16.65}]}, {"date": "2026-01-20", "cliente": "FLAVIO", "consultor": "MARCOS.ANTONIO1", "bruto": 146.2, "liquido": 146.2, "produtos": [{"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 0,70 X A: 0,50", "qty": 1, "value": 21.0}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 0,80 X A: 0,60", "qty": 1, "value": 28.8}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 1,20 X A: 0,60", "qty": 1, "value": 43.2}, {"name": "39 ADESIVO TRANSPARENTE COM LAMINACAO BRANCA (<2M²) L: 1,20 X A: 0,60", "qty": 1, "value": 43.2}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 10.0}]}, {"date": "2026-01-20", "cliente": "VALDO COSTA", "consultor": "MARCOS.ANTONIO1", "bruto": 32.94, "liquido": 32.94, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 15.0}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,40 X A: 0,58", "qty": 1, "value": 6.96}, {"name": "01 ADESIVO LEITOSO - REVENDA L: 0,60 X A: 0,61", "qty": 1, "value": 10.98}]}, {"date": "2026-01-20", "cliente": "FLAVIO", "consultor": "CLAUDIO.CASTRO", "bruto": 22.78, "liquido": 22.78, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 22.78}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 30.0, "liquido": 30.0, "produtos": [{"name": "BLOCOS 10X15 4X0", "qty": 1, "value": 30.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 70.0, "liquido": 70.0, "produtos": [{"name": "CARTOES DE VISITA - COUCHE", "qty": 1, "value": 70.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 28.0, "liquido": 28.0, "produtos": [{"name": "ORÇAMENTO", "qty": 1, "value": 10.0}, {"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 18.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 6.0, "liquido": 6.0, "produtos": [{"name": "XEROX COLORIDA", "qty": 6, "value": 6.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 20.0, "liquido": 20.0, "produtos": [{"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 20.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 4.0, "liquido": 4.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 1, "value": 4.0}]}, {"date": "2026-01-20", "cliente": "GRAFICA MARINHO - GEORGIA", "consultor": "MARCOS.ANTONIO1", "bruto": 60.0, "liquido": 60.0, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 0,50", "qty": 1, "value": 30.0}, {"name": "44 TRANSPARENTE COM CORTE E CONTORNO - REVENDA L: 1,00 X A: 0,50", "qty": 1, "value": 30.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 12.0, "liquido": 12.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 12.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 8.0, "liquido": 8.0, "produtos": [{"name": "IMPRESSAO ADESIVO A4", "qty": 2, "value": 8.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 42.0, "liquido": 42.0, "produtos": [{"name": "CARDÁPIOS DIGINET", "qty": 1, "value": 14.0}, {"name": "BANNER COM ACABAMENTO L: 1,00 X A: 1,00", "qty": 1, "value": 28.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE PRESENCIAL", "consultor": "BEATRIZ.MIGUEL", "bruto": 8.0, "liquido": 8.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 8, "value": 8.0}]}, {"date": "2026-01-21", "cliente": "MILLE ART", "consultor": "MARCOS.ANTONIO1", "bruto": 27.36, "liquido": 27.36, "produtos": [{"name": "32 BANNER 60LX90A", "qty": 1, "value": 27.36}]}, {"date": "2026-01-21", "cliente": "RD GRAFICA", "consultor": "MARCOS.ANTONIO1", "bruto": 63.0, "liquido": 63.0, "produtos": [{"name": "11 BANNER COM ACABAMENTO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 63.0}]}, {"date": "2026-01-20", "cliente": "CLIENTE WHATSAPP", "consultor": "BEATRIZ.MIGUEL", "bruto": 62.0, "liquido": 62.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 62.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE WHATSAPP", "consultor": "CLAUDIO.CASTRO", "bruto": 56.0, "liquido": 56.0, "produtos": [{"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 56.0}]}, {"date": "2026-01-21", "cliente": "SPLASH - FERNANDO PEREIRA LIMA JUNIOR", "consultor": "MARCOS.ANTONIO1", "bruto": 33.0, "liquido": 33.0, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,10", "qty": 1, "value": 33.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 29.7, "liquido": 29.7, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 29.7}]}, {"date": "2026-01-21", "cliente": "VALDENIR ART 10", "consultor": "MARCOS.ANTONIO1", "bruto": 26.2, "liquido": 26.2, "produtos": [{"name": "01 ADESIVO LEITOSO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 26.2}]}, {"date": "2026-01-21", "cliente": "AMANDA - DUMBBELLS", "consultor": "CLAUDIO.CASTRO", "bruto": 201.0, "liquido": 201.0, "produtos": [{"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 201.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE PRESENCIAL", "consultor": "CLAUDIO.CASTRO", "bruto": 66.0, "liquido": 66.0, "produtos": [{"name": "IMPRESSAO COMUM A4", "qty": 1, "value": 66.0}]}, {"date": "2026-01-20", "cliente": "GABRIEL ETIQUETAS TERCEIRIZANTE", "consultor": "MATHEUS.LEVINO", "bruto": 81.0, "liquido": 81.0, "produtos": [{"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 54.0}, {"name": "07 ADESIVO CORTE E CONTORNO - REVENDA L: 1,00 X A: 1,00", "qty": 1, "value": 27.0}]}, {"date": "2026-01-16", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 135.0, "liquido": 135.0, "produtos": [{"name": "CARTOES DE VISITA OFFSET VERNIZ LOCALIZADO", "qty": 1, "value": 135.0}]}, {"date": "2026-01-21", "cliente": "TAMIRES - ATELIE MIMO ROSA", "consultor": "MATHEUS.LEVINO", "bruto": 150.0, "liquido": 150.0, "produtos": [{"name": "ADESIVO CORTE E CONTORNO L: 1,00 X A: 1,00", "qty": 1, "value": 150.0}]}, {"date": "2026-01-21", "cliente": "CLIENTE WHATSAPP", "consultor": "MATHEUS.LEVINO", "bruto": 49.0, "liquido": 49.0, "produtos": [{"name": "IMPRESSAO COUCHE 60 A3", "qty": 3, "value": 30.0}, {"name": "FOTOS 10X15", "qty": 1, "value": 4.0}, {"name": "IMPRESSAO COUCHE 80 A4", "qty": 1, "value": 5.0}, {"name": "IMPRESSAO COUCHE 60 A4", "qty": 1, "value": 5.0}, {"name": "PLASTIFICACAO A5", "qty": 1, "value": 5.0}]}, {"date": "2026-01-21", "cliente": "RAFA - TAPIOCARIA", "consultor": "CLAUDIO.CASTRO", "bruto": 923.0, "liquido": 923.0, "produtos": [{"name": "BLOCOS 10X15 4X0", "qty": 1, "value": 480.0}, {"name": "ADESIVO LEITOSO L: 1,00 X A: 1,00", "qty": 1, "value": 350.0}, {"name": "PVC 2MM ADESIVADO L: 1,00 X A: 1,00", "qty": 1, "value": 22.0}, {"name": "PLASTIFICACAO A5", "qty": 1, "value": 10.0}, {"name": "CARDÁPIOS DIGINET", "qty": 1, "value": 61.0}]}];
+
+/* ==========================================================
+   UTILIDADES
+   ========================================================== */
+const fmtBRL = (n) => (n ?? 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL', minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtPct = (n) => (n ?? 0).toLocaleString('pt-BR', { style:'percent', minimumFractionDigits:1, maximumFractionDigits:1 });
+const uniq = (arr) => Array.from(new Set(arr)).filter(x => x !== null && x !== undefined && String(x).trim() !== '').sort((a,b)=>String(a).localeCompare(String(b), 'pt-BR'));
+const parseISO = (s) => new Date(s + 'T00:00:00');
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+
+function fmtTopShare(topValue, totalValue) {
+  if (!totalValue || totalValue <= 0) {
+    return '100,00 / 0,00';
+  }
+  const pct = (topValue / totalValue) * 100;
+  return `100,00 / ${pct.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+}
+
+function fmtPct2(n) {
+  const v = (Number.isFinite(n) ? n : 0);
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPctPair(pctTop, pctAll) {
+  return `${fmtPct2(pctTop)} / ${fmtPct2(pctAll)}`;
+}
+
+function brMoneyToNumber(s) {
+  if (s === null || s === undefined) return 0;
+  const x = String(s).replace('R$','').trim();
+  if (!x) return 0;
+  // aceita 1.234,56 ou 1234,56
+  const cleaned = x.replace(/\./g,'').replace(',', '.').replace(/\s/g,'');
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseProductsHTML(s) {
+  if (!s) return [];
+  const normalized = String(s).replace(/\s*<br>\s*/ig, ' | ').replace(/\n/g,' | ');
+  const parts = normalized.split('|').map(p => p.trim().replace(/^,|,$/g,'')).filter(Boolean);
+  const out = [];
+  for (const p of parts) {
+    const m = p.match(/^(.*?)\s*\((\s*\d+)\s*-\s*R\$\s*([\d\.,]+)\)/);
+    if (m) {
+      out.push({ name: m[1].trim(), qty: Number(m[2]), value: brMoneyToNumber(m[3]) });
+      continue;
+    }
+    const m2 = p.match(/^(.*?)\s*\(.*?R\$\s*([\d\.,]+)\)/);
+    if (m2) {
+      out.push({ name: m2[1].trim(), qty: null, value: brMoneyToNumber(m2[2]) });
+      continue;
+    }
+    out.push({ name: p.trim(), qty: null, value: null });
+  }
+  return out;
+}
+
+function getYear(dateStr) {
+  return parseISO(dateStr).getFullYear();
+}
+
+function withinISO(dateStr, startStr, endStr) {
+  // Comparação por string ISO (YYYY-MM-DD) evita bugs de timezone.
+  if (startStr && dateStr < startStr) return false;
+  if (endStr && dateStr > endStr) return false; // fim inclusivo
+  return true;
+}
+
+function selectedValues(selId) {
+  const el = document.getElementById(selId);
+  return Array.from(el.selectedOptions).map(o => o.value);
+}
+
+/* ==========================================================
+   AUTOCOMPLETE MULTI-SELECT (offline, sem bibliotecas)
+   Regras:
+   - Visualmente vazio por padrão.
+   - Logicamente "todos incluídos" quando includeSet estiver vazio.
+   ========================================================== */
+const AC = {}; // { key: { all:[], include:Set, exclude:Set } }
+
+function acInit(key, allValues) {
+  AC[key] = {
+    all: (allValues || []).slice(),
+    include: new Set(), // vazio = todos
+    exclude: new Set()
+  };
+
+  // limpa UI
+  document.getElementById(key + '_input').value = '';
+  document.getElementById(key + '_dd').style.display = 'none';
+  document.getElementById(key + '_chips').innerHTML = '';
+
+  // eventos
+  const input = document.getElementById(key + '_input');
+  const dd = document.getElementById(key + '_dd');
+
+  input.addEventListener('input', () => acRenderDD(key));
+  input.addEventListener('focus', () => acRenderDD(key));
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      dd.style.display = 'none';
+      input.blur();
+    }
+    if (e.key === 'Enter') {
+      // se houver item único no dropdown, seleciona
+      const first = dd.querySelector('.ac-item');
+      if (first) { first.click(); e.preventDefault(); }
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const root = document.getElementById(key + '_ac');
+    if (!root.contains(e.target)) dd.style.display = 'none';
+  });
+
+  // hint padrão
+  const hint = document.getElementById(key + '_hint');
+  if (key.endsWith('Inc')) hint.textContent = 'Padrão: todos incluídos (campo vazio).';
+  else hint.textContent = 'Dica: exclui itens mantendo o restante.';
+}
+
+function acReset(key) {
+  if (!AC[key]) return;
+  AC[key].include = new Set();
+  AC[key].exclude = new Set();
+  document.getElementById(key + '_input').value = '';
+  document.getElementById(key + '_dd').style.display = 'none';
+  document.getElementById(key + '_chips').innerHTML = '';
+}
+
+function getACSet(key) {
+  // Retorna set para o chamador (aplicar filtros).
+  // Para include: vazio = todos (tratado no applyFilters).
+  if (!AC[key]) return new Set();
+  // Para manter compatibilidade com applyFilters, se for "Excluir" retornamos exclude
+  return key.endsWith('Exc') ? new Set(AC[key].exclude) : new Set(AC[key].include);
+}
+
+function acRenderDD(key) {
+  const state = AC[key];
+  if (!state) return;
+  const input = document.getElementById(key + '_input');
+  const dd = document.getElementById(key + '_dd');
+  const q = input.value.trim().toLowerCase();
+
+  let items = state.all;
+  if (q) items = items.filter(v => String(v).toLowerCase().includes(q));
+  items = items.slice(0, 50);
+
+  dd.innerHTML = '';
+  if (!items.length) {
+    dd.style.display = 'none';
+    return;
+  }
+  for (const v of items) {
+    const div = document.createElement('div');
+    div.className = 'ac-item';
+    div.textContent = v;
+    div.onclick = () => {
+      acToggle(key, v);
+      input.value = '';
+      dd.style.display = 'none';
+      applyFilters();
+    };
+    dd.appendChild(div);
+  }
+  
+  dd.style.display = 'block';
+}
+
+function acToggle(key, value) {
+  const state = AC[key];
+  const isExclude = key.endsWith('Exc');
+  const set = isExclude ? state.exclude : state.include;
+
+  if (set.has(value)) set.delete(value);
+  else set.add(value);
+
+  // Regra "todos por padrão" (include):
+  // se incluir ficar igual ao universo inteiro, volta para vazio (todos)
+  if (!isExclude) {
+    if (set.size === state.all.length) set.clear();
+  }
+
+  acRenderChips(key);
+}
+
+function acRenderChips(key) {
+  const state = AC[key];
+  const isExclude = key.endsWith('Exc');
+  const set = isExclude ? state.exclude : state.include;
+
+  const chips = document.getElementById(key + '_chips');
+  chips.innerHTML = '';
+
+  // include vazio = todos -> chips vazio por padrão
+  if (!isExclude && set.size === 0) return;
+
+  // chips
+  for (const v of Array.from(set).sort((a,b)=>String(a).localeCompare(String(b),'pt-BR'))) {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.innerHTML = `<span>${v}</span><span class="x">x</span>`;
+    c.querySelector('.x').onclick = () => {
+      set.delete(v);
+      // se include ficou total, colapsa para todos
+      if (!isExclude && set.size === state.all.length) set.clear();
+      acRenderChips(key);
+      applyFilters();
+    };
+    chips.appendChild(c);
+  }
+}
+
+function setOptions(selId, values) {
+  const el = document.getElementById(selId);
+  el.innerHTML = '';
+  for (const v of values) {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    el.appendChild(opt);
+  }
+}
+
+/* ==========================================================
+   CONSULTOR: BOTÕES DE INCLUSÃO (Todos / Nenhum / Inverter)
+   ========================================================== */
+let CON_INCLUDE = new Set(); // vazio = todos
+
+function getConIncludeSet() {
+  return new Set(CON_INCLUDE); // cópia
+}
+
+function setAllConsultores(consultores) {
+  // vazio = todos
+  CON_INCLUDE = new Set();
+  // UI
+  const wrap = document.getElementById('conBtns');
+  Array.from(wrap.children).forEach(ch => ch.classList.remove('active'));
+  document.getElementById('conAllBtn').classList.add('active');
+  document.getElementById('conNoneBtn').classList.remove('active');
+}
+
+function setNoneConsultores() {
+  CON_INCLUDE = new Set(['__NONE__']); // sentinel: filtra tudo
+  const wrap = document.getElementById('conBtns');
+  Array.from(wrap.children).forEach(ch => ch.classList.remove('active'));
+  document.getElementById('conNoneBtn').classList.add('active');
+  document.getElementById('conAllBtn').classList.remove('active');
+}
+
+function normalizeConState() {
+  // Remove sentinel if user selects something
+  if (CON_INCLUDE.has('__NONE__') && CON_INCLUDE.size > 1) CON_INCLUDE.delete('__NONE__');
+  // If sentinel is present alone, keep as is
+}
+
+function buildConsultorButtons(consultores) {
+  const wrap = document.getElementById('conBtns');
+  wrap.innerHTML = '';
+  // default: todos
+  CON_INCLUDE = new Set();
+  const allBtn = document.getElementById('conAllBtn');
+  const noneBtn = document.getElementById('conNoneBtn');
+  const invBtn = document.getElementById('conInvertBtn');
+
+  allBtn.onclick = () => { setAllConsultores(consultores); applyFilters(); };
+  noneBtn.onclick = () => { setNoneConsultores(); applyFilters(); };
+  invBtn.onclick = () => {
+    // invert based on full list
+    if (CON_INCLUDE.size === 0) {
+      // all -> none (select none means sentinel)
+      setNoneConsultores();
+    } else if (CON_INCLUDE.size === 1 && CON_INCLUDE.has('__NONE__')) {
+      // none -> all
+      setAllConsultores(consultores);
+    } else {
+      const next = new Set();
+      for (const c of consultores) if (!CON_INCLUDE.has(c)) next.add(c);
+      CON_INCLUDE = next;
+      normalizeConState();
+      // update UI
+      Array.from(wrap.children).forEach(ch => {
+        if (CON_INCLUDE.has(ch.dataset.value)) ch.classList.add('active');
+        else ch.classList.remove('active');
+      });
+      allBtn.classList.remove('active');
+      noneBtn.classList.remove('active');
+    }
+    applyFilters();
+  };
+
+  for (const c of consultores) {
+    const b = document.createElement('div');
+    b.className = 'btn';
+    b.textContent = c;
+    b.dataset.value = c;
+    b.onclick = () => {
+      // If in "all" mode (empty set), start from all selected then toggle off only this one?
+      // We'll switch to explicit include mode by setting all first.
+      if (CON_INCLUDE.size === 0) {
+        CON_INCLUDE = new Set(consultores);
+        allBtn.classList.remove('active');
+      }
+      if (CON_INCLUDE.has('__NONE__')) CON_INCLUDE.delete('__NONE__');
+
+      if (CON_INCLUDE.has(c)) CON_INCLUDE.delete(c);
+      else CON_INCLUDE.add(c);
+
+      // If it became full set, collapse back to "all"
+      if (CON_INCLUDE.size === consultores.length) {
+        CON_INCLUDE = new Set();
+        setAllConsultores(consultores);
+      } else if (CON_INCLUDE.size === 0) {
+        // user removed all explicitly -> none
+        setNoneConsultores();
+      } else {
+        // update UI
+        b.classList.toggle('active');
+        allBtn.classList.remove('active');
+        noneBtn.classList.remove('active');
+      }
+      applyFilters();
+    };
+    wrap.appendChild(b);
+  }
+
+  // start as all
+  allBtn.classList.add('active');
+  noneBtn.classList.remove('active');
+}
+
+function svgClear(svg) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+}
+
+function svgEl(tag, attrs={}) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function drawAxes(svg, w, h, pad) {
+  svg.appendChild(svgEl('line', { x1: pad, y1: h-pad, x2: w-pad, y2: h-pad, stroke: 'rgba(255,255,255,.15)', 'stroke-width': 1 }));
+  svg.appendChild(svgEl('line', { x1: pad, y1: pad, x2: pad, y2: h-pad, stroke: 'rgba(255,255,255,.15)', 'stroke-width': 1 }));
+}
+
+function drawLine(svg, points, color='rgba(0,174,239,.95)') {
+  if (points.length < 2) return;
+  const d = points.map((p,i)=> (i===0?`M ${p.x} ${p.y}`:`L ${p.x} ${p.y}`)).join(' ');
+  svg.appendChild(svgEl('path', { d, fill:'none', stroke: color, 'stroke-width': 2.3 }));
+}
+
+function drawBars(svg, values, labels, {pad=60, maxBars=12, color='rgba(236,0,140,.75)'}={}) {
+  const w=900, h=260;
+  svgClear(svg);
+  drawAxes(svg, w, h, pad);
+  const pairs = values.map((v,i)=>({v, l:labels[i]})).slice(0, maxBars);
+  if (!pairs.length) return;
+  const vmax = Math.max(1, ...pairs.map(p=>p.v));
+  const innerW = w - pad*2;
+  const innerH = h - pad*2;
+  const bw = innerW / pairs.length;
+  for (let i=0;i<pairs.length;i++) {
+    const x = pad + i*bw + bw*0.12;
+    const barW = bw*0.76;
+    const bh = innerH*(pairs[i].v/vmax);
+    const y = h - pad - bh;
+    svg.appendChild(svgEl('rect', { x, y, width: barW, height: bh, rx: 6, fill: color }));
+    const lbl = pairs[i].l || '';
+    const tx = x + barW/2;
+    const ty = h - pad + 18;
+    const t = svgEl('text', { x: tx, y: ty, 'text-anchor':'end', 'dominant-baseline':'middle', fill:'rgba(255,255,255,.7)', 'font-size': 12 });
+    t.setAttribute('transform', `rotate(-90 ${tx} ${ty})`);
+    t.textContent = (lbl.length>18?lbl.slice(0,18)+'…':lbl);
+    svg.appendChild(t);
+  }
+}
+
+function drawPareto(svg, items, {pad=60, barColor='rgba(255,242,0,.35)', lineColor='rgba(0,174,239,.95)'}={}) {
+  const w=900, h=260;
+  svgClear(svg);
+  drawAxes(svg, w, h, pad);
+  const top = items.slice(0, 20);
+  if (!top.length) return;
+  const total = top.reduce((s,x)=>s+x.value,0) || 1;
+  const vmax = Math.max(1, ...top.map(x=>x.value));
+  const innerW = w - pad*2;
+  const innerH = h - pad*2;
+  const bw = innerW / top.length;
+
+  let cum=0;
+  const pts=[];
+  for (let i=0;i<top.length;i++) {
+    const val=top[i].value;
+    cum += val;
+    const x = pad + i*bw + bw*0.12;
+    const barW = bw*0.76;
+    const bh = innerH*(val/vmax);
+    const y = h - pad - bh;
+    svg.appendChild(svgEl('rect', { x, y, width: barW, height: bh, rx: 6, fill: barColor, stroke:'rgba(255,255,255,.06)' }));
+
+    const cumPct = cum/total;
+    const px = pad + i*bw + bw/2;
+    const py = h - pad - innerH*cumPct;
+    pts.push({x:px, y:py});
+
+    if (i % 4 === 0) {
+      const ty = h - pad + 18;
+      const t = svgEl('text', { x: px, y: ty, 'text-anchor':'end', 'dominant-baseline':'middle', fill:'rgba(255,255,255,.7)', 'font-size': 12 });
+      t.setAttribute('transform', `rotate(-90 ${px} ${ty})`);
+      const lbl = top[i].label || '';
+      t.textContent = (lbl.length>18?lbl.slice(0,18)+'…':lbl);
+      svg.appendChild(t);
+    }
+  }
+  drawLine(svg, pts, lineColor);
+
+  const y80 = h - pad - innerH*0.8;
+  svg.appendChild(svgEl('line', { x1: pad, y1: y80, x2: w-pad, y2: y80, stroke:'rgba(236,0,140,.45)', 'stroke-width': 1.5, 'stroke-dasharray':'6 6' }));
+  const t80 = svgEl('text', { x: w-pad, y: y80-6, 'text-anchor':'end', fill:'rgba(236,0,140,.85)', 'font-size': 11 });
+  t80.textContent = '80%';
+  svg.appendChild(t80);
+}
+
+function drawLineSeries(svg, series, {pad=60, color='rgba(0,174,239,.95)'}={}) {
+  const w=900, h=260;
+  svgClear(svg);
+  drawAxes(svg, w, h, pad);
+  if (!series.length) return;
+  const innerW = w - pad*2;
+  const innerH = h - pad*2;
+  const vmax = Math.max(1, ...series.map(s=>s.value));
+  const n = series.length;
+  const pts = series.map((s,i)=>{
+    const x = pad + (n===1?innerW/2: (i*(innerW/(n-1))));
+    const y = h - pad - innerH*(s.value/vmax);
+    return {x,y,label:s.label,value:s.value};
+  });
+  drawLine(svg, pts, color);
+  for (let i=0;i<pts.length;i++) {
+    if (i % Math.ceil(n/8) !== 0) continue;
+    const tx = pts[i].x;
+    const ty = h - pad + 18;
+    const t = svgEl('text', { x: tx, y: ty, 'text-anchor':'end', 'dominant-baseline':'middle', fill:'rgba(255,255,255,.7)', 'font-size': 12 });
+    t.setAttribute('transform', `rotate(-60 ${tx} ${ty})`);
+    t.textContent = pts[i].label;
+    svg.appendChild(t);
+  }
+}
+
+function drawHistogram(svg, data, {bins=10, pad=60, color='rgba(236,0,140,.75)'}={}) {
+  const w=900, h=260;
+  svgClear(svg);
+  drawAxes(svg, w, h, pad);
+  if (!data.length) return;
+  const min = Math.min(...data), max = Math.max(...data);
+  const span = (max-min) || 1;
+  const binSize = span / bins;
+  const counts = Array.from({length: bins}, ()=>0);
+  for (const v of data) {
+    const idx = clamp(Math.floor((v-min)/binSize), 0, bins-1);
+    counts[idx] += 1;
+  }
+  const cmax = Math.max(...counts) || 1;
+  const innerW = w - pad*2;
+  const innerH = h - pad*2;
+  const bw = innerW / bins;
+  for (let i=0;i<bins;i++) {
+    const x = pad + i*bw + bw*0.10;
+    const barW = bw*0.80;
+    const bh = innerH*(counts[i]/cmax);
+    const y = h - pad - bh;
+    svg.appendChild(svgEl('rect', { x, y, width: barW, height: bh, rx: 6, fill: color }));
+    if (i===0 || i===bins-1) {
+      const t = svgEl('text', { x: x + barW/2, y: h - pad + 16, 'text-anchor':'middle', fill:'rgba(255,255,255,.7)', 'font-size': 12 });
+      t.textContent = (i===0?fmtBRL(min):fmtBRL(max));
+      svg.appendChild(t);
+    }
+  }
+}
+
+function renderTable(elId, rows, headers) {
+  const el = document.getElementById(elId);
+  const thead = '<tr>' + headers.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  const tbody = rows.map(r => '<tr>' + r.map(c=>`<td>${c}</td>`).join('') + '</tr>').join('');
+  el.innerHTML = thead + tbody;
+}
+
+function renderHeatmap(containerId, matrix, xLabels, yLabels) {
+  const container = document.getElementById(containerId);
+  const flat = matrix.flat();
+  const vmax = Math.max(1, ...flat);
+
+  const table = document.createElement('table');
+  table.className = 'tbl';
+
+  const head = document.createElement('tr');
+  head.innerHTML = '<th></th>' + xLabels.map(x=>`<th>${x}</th>`).join('');
+  table.appendChild(head);
+
+  // guarda referências das células para poder destacar o máximo por semana (coluna)
+  const cells = Array.from({length: yLabels.length}, ()=> Array.from({length: xLabels.length}, ()=>null));
+
+  for (let yi=0; yi<yLabels.length; yi++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<th>${yLabels[yi]}</th>`;
+    for (let xi=0; xi<xLabels.length; xi++) {
+      const v = matrix[yi][xi] || 0;
+      const t = v / vmax;
+      const td = document.createElement('td');
+      td.textContent = v ? fmtBRL(v) : '';
+      td.dataset.v = String(v);
+      td.classList.add('hm-cell');
+      td.style.borderBottom = '1px solid rgba(255,255,255,.06)';
+      td.style.background = `rgba(0,174,239, ${0.06 + 0.34*t})`;
+      td.style.borderRadius = '10px';
+      td.style.fontFamily = 'var(--mono)';
+      tr.appendChild(td);
+      cells[yi][xi] = td;
+    }
+    table.appendChild(tr);
+  }
+
+  // destaque automático: maior valor de cada semana (cada coluna S1..S5)
+  for (let xi=0; xi<xLabels.length; xi++) {
+    let maxV = 0;
+    for (let yi=0; yi<yLabels.length; yi++) {
+      const v = Number(cells[yi][xi]?.dataset?.v || 0);
+      if (v > maxV) maxV = v;
+    }
+    if (maxV <= 0) continue;
+
+    for (let yi=0; yi<yLabels.length; yi++) {
+      const td = cells[yi][xi];
+      const v = Number(td.dataset.v || 0);
+      if (v === maxV) {
+        td.style.outline = '2px solid rgba(255,242,0,.85)';
+        td.style.outlineOffset = '-2px';
+        td.style.boxShadow = '0 0 0 3px rgba(255,242,0,.18)';
+        td.style.fontWeight = '800';
+      }
+    }
+  }
+
+  // resumo por semana: soma e % do total do mês (heatmap)
+  const monthTotal = flat.reduce((acc, v)=> acc + (v > 0 ? v : 0), 0);
+  const sumByWeek = xLabels.map((_, xi) => {
+    let s = 0;
+    for (let yi=0; yi<yLabels.length; yi++) {
+      const v = Number(cells[yi][xi]?.dataset?.v || 0);
+      if (v > 0) s += v;
+    }
+    return s;
+  });
+  const fmtPct = (p) => (isFinite(p) ? p.toFixed(1).replace('.', ',') : '0,0') + '%';
+
+  const trSum = document.createElement('tr');
+  trSum.className = 'week-summary';
+  trSum.innerHTML = '<th>Total</th>' + sumByWeek.map(s => {
+    const pct = monthTotal > 0 ? (s / monthTotal) * 100 : 0;
+    return `<td><div class="wk-sum">${fmtBRL(s)}</div><div class="wk-pct">(${fmtPct(pct)})</div></td>`;
+  }).join('');
+  table.appendChild(trSum);
+  // destaque: semana com maior total (na linha Total)
+  const maxWeek = Math.max(...sumByWeek.map(s => (s > 0 ? s : 0)));
+  if (maxWeek > 0) {
+    // trSum cells: first is <th>, then 1 td per week
+    const tds = trSum.querySelectorAll('td');
+    tds.forEach((td, i) => {
+      const s = sumByWeek[i] || 0;
+      if (s === maxWeek) td.classList.add('wk-winner');
+    });
+  }
+
+
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+ /* ==========================================================
+   DASHBOARD
+   ========================================================== */
+let CURRENT_YEAR = null;
+let CURRENT_MONTH = null;
+
+function getMonth(dateStr) {
+  return parseISO(dateStr).getMonth() + 1; // 1-12
+}
+
+function getMonthName(monthNum) {
+  const names = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  return names[monthNum - 1] || '';
+}
+
+function getAllDims(sales) {
+  const years = uniq(sales.map(s=>getYear(s.date)));
+  const clientes = uniq(sales.map(s=>s.cliente));
+  const consultores = uniq(sales.map(s=>s.consultor));
+  const produtos = uniq(sales.flatMap(s=> (s.produtos||[]).map(p=>p.name) ));
+  return { years, clientes, consultores, produtos };
+}
+
+function getMonthsForYear(sales, year) {
+  const monthsSet = new Set(sales
+    .filter(s => getYear(s.date) === year)
+    .map(s => getMonth(s.date))
+  );
+  // Retorna meses em ordem cronológica (1-12)
+  const months = [];
+  for (let i = 1; i <= 12; i++) {
+    if (monthsSet.has(i)) {
+      months.push(i);
+    }
+  }
+  return months;
+}
+
+function rebuildYearButtons(years) {
+  const wrap = document.getElementById('yearBtns');
+  wrap.innerHTML = '';
+  years.forEach((y,i)=> {
+    const b = document.createElement('div');
+    b.className = 'btn' + (i===0 ? ' active' : '');
+    b.textContent = String(y);
+    b.onclick = () => {
+      CURRENT_YEAR = y;
+      CURRENT_MONTH = null; // Reset month when year changes
+      Array.from(wrap.children).forEach(ch => ch.classList.remove('active'));
+      b.classList.add('active');
+      rebuildMonthButtons(SALES, y);
+      applyFilters();
+    };
+    wrap.appendChild(b);
+  });
+  CURRENT_YEAR = years[0] ?? null;
+  rebuildMonthButtons(SALES, CURRENT_YEAR);
+}
+
+function rebuildMonthButtons(sales, year) {
+  const monthField = document.getElementById('monthField');
+  const wrap = document.getElementById('monthBtns');
+  wrap.innerHTML = '';
+  
+  const months = getMonthsForYear(sales, year);
+  
+  if (months.length <= 1) {
+    monthField.style.display = 'none';
+    CURRENT_MONTH = null;
+    return;
+  }
+  
+  monthField.style.display = 'block';
+  
+  months.forEach((m, i) => {
+    const b = document.createElement('div');
+    b.className = 'btn';
+    b.textContent = getMonthName(m);
+    b.dataset.month = String(m);
+    b.onclick = () => {
+      CURRENT_MONTH = CURRENT_MONTH === m ? null : m;
+      Array.from(wrap.children).forEach(ch => ch.classList.remove('active'));
+      if (CURRENT_MONTH !== null) {
+        b.classList.add('active');
+      }
+      applyFilters();
+    };
+    wrap.appendChild(b);
+  });
+  CURRENT_MONTH = null;
+}
+
+function applyFilters() {
+  const status = document.getElementById('status');
+  const startStr = document.getElementById('dateStart').value; // YYYY-MM-DD
+  const endStr = document.getElementById('dateEnd').value;     // YYYY-MM-DD
+
+  const cliInc = getACSet('cliInc');
+  const cliExc = getACSet('cliExc');
+  const conInc = getConIncludeSet();  const proInc = getACSet('proInc');
+  const proExc = getACSet('proExc');
+  const filtered = SALES.filter(s => {
+    if (CURRENT_YEAR && getYear(s.date) !== CURRENT_YEAR) return false;
+    if (CURRENT_MONTH && getMonth(s.date) !== CURRENT_MONTH) return false;
+    if (!withinISO(s.date, startStr, endStr)) return false;
+
+    if (cliInc.size && !cliInc.has(s.cliente)) return false;
+    if (cliExc.has(s.cliente)) return false;
+
+    if (conInc.size === 1 && conInc.has('__NONE__')) return false;
+    if (conInc.size && !conInc.has(s.consultor)) return false;
+
+    const prodNames = new Set((s.produtos||[]).map(p=>p.name));
+    if (proInc.size) {
+      let ok=false;
+      for (const p of proInc) if (prodNames.has(p)) { ok=true; break; }
+      if (!ok) return false;
+    }
+    for (const p of proExc) if (prodNames.has(p)) return false;
+
+    return true;
+  });
+
+  status.textContent = `${filtered.length} vendas após filtros`;
+  renderAll(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('dateStart').value = '';
+  document.getElementById('dateEnd').value = '';
+  // Consultor buttons: volta para Todos
+  const dims = getAllDims(SALES);
+  buildConsultorButtons(dims.consultores);
+  acReset('cliInc');
+  acReset('cliExc');
+  acReset('proInc');
+  acReset('proExc');
+  applyFilters();
+}
+
+function aggregate(filtered) {
+  const bruto = filtered.reduce((s,x)=>s+(x.bruto||0),0);
+  const liquido = filtered.reduce((s,x)=>s+(x.liquido||0),0);
+  const n = filtered.length;
+  const ticket = n ? liquido/n : 0;
+
+  const clientes = uniq(filtered.map(x=>x.cliente));
+  const consultores = uniq(filtered.map(x=>x.consultor));
+
+  // por dia
+  const byDay = new Map();
+  for (const s of filtered) {
+    byDay.set(s.date, (byDay.get(s.date)||0) + (s.liquido||0));
+  }
+  const days = Array.from(byDay.entries()).sort((a,b)=>a[0].localeCompare(b[0])).map(([d,v])=>({label: d.slice(8,10), full:d, value:v}));
+
+  // produtos (valor do item) + quantidade (se não houver qty, conta 1)
+  const byProd = new Map();
+  const byProdQty = new Map();
+  for (const s of filtered) {
+    for (const p of (s.produtos||[])) {
+      if (!p || !p.name) continue;
+      const name = p.name;
+      const v = (p.value ?? 0);
+      let q = (p.qty ?? 1);
+      q = Number.isFinite(q) ? q : 1;
+      byProd.set(name, (byProd.get(name)||0) + v);
+      byProdQty.set(name, (byProdQty.get(name)||0) + q);
+    }
+  }
+  const prods = Array.from(byProd.entries())
+    .map(([label,value])=>{
+      const qty = byProdQty.get(label)||0;
+      const ticket = qty ? value/qty : 0;
+      return {label, value, qty, ticket};
+    })
+    .sort((a,b)=>b.value-a.value);
+  // clientes (liquido) + número de vendas
+  const byCli = new Map();
+  const byCliN = new Map();
+  for (const s of filtered) {
+    const key = s.cliente || '(vazio)';
+    byCli.set(key, (byCli.get(key)||0) + (s.liquido||0));
+    byCliN.set(key, (byCliN.get(key)||0) + 1);
+  }
+  const clis = Array.from(byCli.entries())
+    .map(([label,value])=>{
+      const n = byCliN.get(label)||0;
+      const ticket = n ? value/n : 0;
+      return {label, value, n, ticket};
+    })
+    .sort((a,b)=>b.value-a.value);
+  // consultores (liquido, vendas, ticket)
+  const byCon = new Map();
+  for (const s of filtered) {
+    const key = s.consultor || '(vazio)';
+    const cur = byCon.get(key) || {label:key, value:0, n:0};
+    cur.value += (s.liquido||0);
+    cur.n += 1;
+    byCon.set(key, cur);
+  }
+  const cons = Array.from(byCon.values()).map(x=>({...x, ticket: x.n ? x.value/x.n : 0})).sort((a,b)=>b.value-a.value);
+
+  // tickets
+  const tickets = filtered.map(x=>x.liquido||0).filter(v=>Number.isFinite(v));
+
+  return { bruto, liquido, n, ticket, clientesCount: clientes.length, consultoresCount: consultores.length, days, prods, clis, cons, tickets };
+}
+
+
+function renderConsultorResumo(agg) {
+  const total = agg.cons.reduce((s,x)=>s+x.value,0) || 1;
+  const rows = agg.cons.map(c => [
+    c.label,
+    c.n.toLocaleString('pt-BR'),
+    fmtBRL(c.value),
+    fmtBRL(c.ticket),
+    ((c.value/total)*100).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2})
+  ]);
+
+  rows.push([
+    '<strong>Total</strong>',
+    '<strong>' + agg.n.toLocaleString('pt-BR') + '</strong>',
+    '<strong>' + fmtBRL(agg.liquido) + '</strong>',
+    '<strong>' + fmtBRL(agg.ticket) + '</strong>',
+    '<strong>100,00</strong>'
+  ]);
+
+  renderTable(
+    'consultorResumo',
+    rows,
+    ['Consultor','Vendas','Total (R$)','Tkt. Médio (R$)','%']
+  );
+}
+function renderKPIs(agg) {
+  const diffPct = agg.bruto ? (agg.bruto - agg.liquido)/agg.bruto : 0;
+  const kpis = [
+    {title:'Faturamento bruto', value: fmtBRL(agg.bruto), sub:'Soma de Bruto(R$)', cls:'accent-y'},
+    {title:'Faturamento líquido', value: fmtBRL(agg.liquido), sub:'Soma de Líquido(R$)', cls:'accent-c'},
+    {title:'Bruto x Líquido', value: fmtPct(diffPct), sub:'(Bruto - Líquido) / Bruto', cls:'accent-m'},
+    {title:'Número de vendas', value: agg.n.toLocaleString('pt-BR'), sub:'Contagem de vendas', cls:''},
+    {title:'Ticket médio', value: fmtBRL(agg.ticket), sub:'Líquido / Vendas', cls:''},
+    {title:'Clientes ativos', value: agg.clientesCount.toLocaleString('pt-BR'), sub:'Clientes únicos', cls:''},
+  ];
+  const wrap = document.getElementById('kpis');
+  wrap.innerHTML = kpis.map(k => `
+    <div class="card">
+      <div class="kpi-title">${k.title}</div>
+      <div class="kpi-value ${k.cls}">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderTop10ClienteProduto(agg) {
+  // Obter valores dinâmicos dos inputs
+  const topCliLimit = parseInt(document.getElementById('topCliInput')?.value || 10, 10) || 10;
+  const topProdLimit = parseInt(document.getElementById('topProdInput')?.value || 10, 10) || 10;
+  
+  // Top X Clientes (por total líquido)
+  const cliTotal = agg.liquido || 1;
+  const topCliList = (agg.clis || []).slice(0, topCliLimit);
+  const topCliN = topCliList.reduce((s,x)=>s+(x.n||0),0);
+  const topCliSum = topCliList.reduce((s,x)=>s+(x.value||0),0);
+  const topCliTicket = topCliN ? topCliSum/topCliN : 0;
+
+  const cliRows = topCliList.map((c, idx) => {
+    const n = c.n || 0;
+    const val = c.value || 0;
+    const ticket = n ? val / n : 0;
+
+    // AA: % do item dentro do Top X (soma AA = 100,00)
+    const pctTop10 = topCliSum ? (val / topCliSum) * 100 : 0;
+
+    // BB: % do item no total geral do período (todos os clientes filtrados)
+    const pctAll = (val / cliTotal) * 100;
+
+    return [
+      '<strong>' + (idx + 1) + 'º</strong>',
+      c.label,
+      n.toLocaleString('pt-BR'),
+      fmtBRL(val),
+      fmtBRL(ticket),
+      fmtPctPair(pctTop10, pctAll)
+    ];
+  });
+
+  cliRows.push([
+    '<strong>-</strong>',
+    '<strong>Total:</strong>',
+    '<strong>'+topCliN.toLocaleString('pt-BR')+'</strong>',
+    '<strong>'+fmtBRL(topCliSum)+'</strong>',
+    '<strong>'+fmtBRL(topCliTicket)+'</strong>',
+    '<strong>'+fmtTopShare(topCliSum, cliTotal)+'</strong>'
+  ]);
+
+  renderTable(
+    'top10CliTbl',
+    cliRows.length ? cliRows : [['', 'Sem dados para os filtros aplicados.', '', '', '', '']],
+    ['Pos.','Cliente','Vendas','Total (R$)','Tkt. Médio (R$)','%']
+  );
+
+  const cm = document.getElementById('top10CliMeta');
+  if (cm) cm.textContent = (agg.clis && agg.clis.length) ? `${agg.clis.length} cliente(s) no período` : 'sem dados';
+
+  // Top 10 Produtos (por total do item)
+  const prodTotal = (agg.prods || []).reduce((s,x)=>s+(x.value||0),0) || 1;
+  const topProdList = (agg.prods || []).slice(0, topProdLimit);
+  const topProdQty = topProdList.reduce((s,x)=>s+(x.qty||0),0);
+  const topProdSum = topProdList.reduce((s,x)=>s+(x.value||0),0);
+  const topProdTicket = topProdQty ? topProdSum/topProdQty : 0;
+
+  const prodRows = topProdList.map((p, idx) => {
+    const q = p.qty || 0;
+    const val = p.value || 0;
+    const ticket = q ? val / q : 0;
+
+    const pctTop10 = topProdSum ? (val / topProdSum) * 100 : 0;
+    const pctAll = (val / prodTotal) * 100;
+
+    return [
+      '<strong>' + (idx + 1) + 'º</strong>',
+      p.label,
+      q.toLocaleString('pt-BR'),
+      fmtBRL(val),
+      fmtBRL(ticket),
+      fmtPctPair(pctTop10, pctAll)
+    ];
+  });
+
+  prodRows.push([
+    '<strong>-</strong>',
+    '<strong>Total:</strong>',
+    '<strong>'+topProdQty.toLocaleString('pt-BR')+'</strong>',
+    '<strong>'+fmtBRL(topProdSum)+'</strong>',
+    '<strong>'+fmtBRL(topProdTicket)+'</strong>',
+    '<strong>'+fmtTopShare(topProdSum, prodTotal)+'</strong>'
+  ]);
+
+  renderTable(
+    'top10ProdTbl',
+    prodRows.length ? prodRows : [['', 'Sem dados para os filtros aplicados.', '', '', '', '']],
+    ['Pos.','Produto','Qtde','Total (R$)','Tkt. Médio (R$)','%']
+  );
+
+  const pm = document.getElementById('top10ProdMeta');
+  if (pm) pm.textContent = (agg.prods && agg.prods.length) ? `${agg.prods.length} produto(s) no período` : 'sem dados';
+}
+
+function renderAll(filtered) {
+const agg = aggregate(filtered);
+  renderTop10ClienteProduto(agg);
+  renderKPIs(agg);
+  renderConsultorResumo(agg);
+
+  // Tendência
+  const trendSvg = document.getElementById('trendSvg');
+  const trendMeta = document.getElementById('trendMeta');
+  if (trendSvg && trendMeta) {
+    drawLineSeries(trendSvg, agg.days.map(d=>({label:d.label, value:d.value})));
+    trendMeta.textContent = agg.days.length ? `de ${agg.days[0].full} a ${agg.days[agg.days.length-1].full}` : 'sem dados';
+  }
+
+  // Histograma
+  const histSvg = document.getElementById('histSvg');
+  const histMeta = document.getElementById('histMeta');
+  if (histSvg && histMeta) {
+    drawHistogram(histSvg, agg.tickets, {bins: 12});
+    histMeta.textContent = agg.tickets.length ? `${agg.tickets.length} vendas` : 'sem dados';
+  }
+
+  // Pareto clientes
+  const paretoCliSvg = document.getElementById('paretoCliSvg');
+  const paretoCliMeta = document.getElementById('paretoCliMeta');
+  if (paretoCliSvg && paretoCliMeta) {
+    drawPareto(paretoCliSvg, agg.clis, {barColor:'rgba(236,0,140,.22)', lineColor:'rgba(0,174,239,.95)'});
+    const totalCli = agg.clis.reduce((s,x)=>s+x.value,0) || 1;
+    const top10 = agg.clis.slice(0,10).reduce((s,x)=>s+x.value,0);
+    paretoCliMeta.textContent = agg.clis.length ? `Top 10 = ${fmtPct(top10/totalCli)}` : 'sem dados';
+  }
+
+  // Pareto produtos
+  const paretoProSvg = document.getElementById('paretoProSvg');
+  const paretoProMeta = document.getElementById('paretoProMeta');
+  if (paretoProSvg && paretoProMeta) {
+    drawPareto(paretoProSvg, agg.prods, {barColor:'rgba(255,242,0,.18)', lineColor:'rgba(0,174,239,.95)'});
+    const totalPro = agg.prods.reduce((s,x)=>s+x.value,0) || 1;
+    const top10p = agg.prods.slice(0,10).reduce((s,x)=>s+x.value,0);
+    paretoProMeta.textContent = agg.prods.length ? `Top 10 = ${fmtPct(top10p/totalPro)}` : 'sem dados';
+  }
+
+  // Top clientes
+  const topCliSvg = document.getElementById('topCliSvg');
+  const topCliMeta = document.getElementById('topCliMeta');
+  if (topCliSvg && topCliMeta) {
+    drawBars(topCliSvg,
+      agg.clis.slice(0,12).map(x=>x.value),
+      agg.clis.slice(0,12).map(x=>x.label),
+      {color:'rgba(0,174,239,.55)', maxBars: 12}
+    );
+    topCliMeta.textContent = agg.clis.length ? `Total de clientes: ${agg.clis.length}` : 'sem dados';
+  }
+
+  // Consultores
+  const conSvg = document.getElementById('conSvg');
+  const conMeta = document.getElementById('conMeta');
+  const cons = agg.cons.slice(0,12);
+  if (conSvg && conMeta) {
+    svgClear(conSvg);
+    drawAxes(conSvg, 900, 260, 60);
+    if (cons.length) {
+      const vmax = Math.max(1, ...cons.map(x=>x.value));
+      const w=900,h=260,pad=36, innerW=w-pad*2, innerH=h-pad*2, bw=innerW/cons.length;
+      for (let i=0;i<cons.length;i++) {
+        const x = pad + i*bw + bw*0.12;
+        const barW = bw*0.76;
+        const bh = innerH*(cons[i].value/vmax);
+        const y = h - pad - bh;
+        conSvg.appendChild(svgEl('rect', {x,y,width:barW,height:bh,rx:6,fill:'rgba(236,0,140,.38)'}));
+
+        const tx = x + barW/2;
+        const ty = h - pad + 18;
+        const t = svgEl('text', {x:tx,y:ty,'text-anchor':'end','dominant-baseline':'middle',fill:'rgba(255,255,255,.7)','font-size':12});
+        t.setAttribute('transform', `rotate(-90 ${tx} ${ty})`);
+        t.textContent = (cons[i].label.length>18?cons[i].label.slice(0,18)+'…':cons[i].label);
+        conSvg.appendChild(t);
+
+        const tt = svgEl('text', {x:x+barW/2,y:y-6,'text-anchor':'middle',fill:'rgba(255,242,0,.85)','font-size':10});
+        tt.textContent = fmtBRL(cons[i].ticket);
+        conSvg.appendChild(tt);
+      }
+    }
+    conMeta.textContent = cons.length ? `Consultores: ${agg.cons.length}` : 'sem dados';
+  }
+
+  // Heatmap
+  const weeks = [1,2,3,4,5];
+  const dowNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const matrix = Array.from({length: dowNames.length}, ()=> Array.from({length: weeks.length}, ()=>0));
+  for (const s of filtered) {
+    const d = parseISO(s.date);
+    const dow = d.getDay();
+    const wom = Math.min(5, Math.max(1, Math.ceil(d.getDate()/7)));
+    matrix[dow][wom-1] += (s.liquido||0);
+  }
+  renderHeatmap('heatmap', matrix, weeks.map(w=>`S${w}`), dowNames);
+  document.getElementById('heatMeta').textContent = filtered.length ? 'semana do mês (S1 a S5)' : 'sem dados';
+
+  // Outliers
+  const sorted = [...filtered].sort((a,b)=>(b.liquido||0)-(a.liquido||0));
+  const topTickets = sorted.slice(0,10);
+  const lowTickets = sorted.slice(-10).reverse();
+  
+  // Calcular totais para porcentagens
+  const allTicketsTotal = filtered.reduce((s,x)=>s+(x.liquido||0), 0) || 1;
+  const topTicketsSum = topTickets.reduce((s,x)=>s+(x.liquido||0), 0) || 1;
+  const lowTicketsSum = lowTickets.reduce((s,x)=>s+(x.liquido||0), 0) || 1;
+  
+  const top = topTickets.map(s=>{
+    const val = s.liquido || 0;
+    const pctTop10 = topTicketsSum ? (val / topTicketsSum) * 100 : 0;
+    const pctAll = (val / allTicketsTotal) * 100;
+    return [
+      s.date,
+      s.cliente || '',
+      s.consultor || '',
+      fmtBRL(val),
+      fmtPctPair(pctTop10, pctAll)
+    ];
+  });
+  
+  const low = lowTickets.map(s=>{
+    const val = s.liquido || 0;
+    const pctTop10 = lowTicketsSum ? (val / lowTicketsSum) * 100 : 0;
+    const pctAll = (val / allTicketsTotal) * 100;
+    return [
+      s.date,
+      s.cliente || '',
+      s.consultor || '',
+      fmtBRL(val),
+      fmtPctPair(pctTop10, pctAll)
+    ];
+  });
+  
+  // Adicionar linha de total para Top 10 maiores
+  top.push([
+    '<strong>Total:</strong>',
+    '',
+    '',
+    '<strong>'+fmtBRL(topTicketsSum)+'</strong>',
+    '<strong>'+fmtTopShare(topTicketsSum, allTicketsTotal)+'</strong>'
+  ]);
+  
+  // Adicionar linha de total para Top 10 menores
+  low.push([
+    '<strong>Total:</strong>',
+    '',
+    '',
+    '<strong>'+fmtBRL(lowTicketsSum)+'</strong>',
+    '<strong>'+fmtTopShare(lowTicketsSum, allTicketsTotal)+'</strong>'
+  ]);
+  
+  renderTable('topOut', top, ['Data','Cliente','Consultor','Líquido','%']);
+  renderTable('lowOut', low, ['Data','Cliente','Consultor','Líquido','%']);
+
+  // Limites e observações
+  const notes = [];
+  notes.push('Coortes de clientes não foram incluídas porque a base não tem um identificador de cliente padronizado nem um campo claro de primeira compra. Dá para fazer depois com normalização de nomes.');
+  notes.push('Sazonalidade por hora não foi incluída porque a base não tem horário, só data.');
+  document.getElementById('limitsNote').textContent = notes.join(' ');
+}
+
+function renderBaseMeta(sales) {
+  if (!sales.length) {
+    document.getElementById('baseMeta').textContent = 'sem dados';
+    return;
+  }
+  const dates = sales.map(s=>s.date).sort();
+  const years = uniq(sales.map(s=>getYear(s.date)));
+  document.getElementById('baseMeta').textContent = `${sales.length} vendas, ${
+    years.length
+  } ano(s), de ${dates[0]} a ${dates[dates.length-1]}`;
+}
+
+function dataQuality(sales) {
+  const issues = {
+    data_vazia: 0,
+    cliente_vazio: 0,
+    consultor_vazio: 0,
+    bruto_negativo: 0,
+    liquido_negativo: 0,
+    bruto_menor_liquido: 0,
+    venda_zero: 0,
+    produtos_vazio: 0
+  };
+  for (const s of sales) {
+    if (!s.date) issues.data_vazia++;
+    if (!s.cliente || !String(s.cliente).trim()) issues.cliente_vazio++;
+    if (!s.consultor || !String(s.consultor).trim()) issues.consultor_vazio++;
+    if ((s.bruto||0) < 0) issues.bruto_negativo++;
+    if ((s.liquido||0) < 0) issues.liquido_negativo++;
+    if ((s.bruto||0) < (s.liquido||0)) issues.bruto_menor_liquido++;
+    if ((s.bruto||0) === 0 && (s.liquido||0) === 0) issues.venda_zero++;
+    if (!s.produtos || !s.produtos.length) issues.produtos_vazio++;
+  }
+  const rows = [
+    ['Data vazia', issues.data_vazia],
+    ['Cliente vazio', issues.cliente_vazio],
+    ['Consultor vazio', issues.consultor_vazio],
+    ['Bruto negativo', issues.bruto_negativo],
+    ['Líquido negativo', issues.liquido_negativo],
+    ['Bruto menor que Líquido', issues.bruto_menor_liquido],
+    ['Venda com valor zero', issues.venda_zero],
+    ['Produtos vazios', issues.produtos_vazio],
+  ];
+  renderTable('dqTbl', rows.map(r=>[r[0], String(r[1])]), ['Regra', 'Qtd']);
+}
+
+function initDashboard() {
+  renderBaseMeta(SALES);
+
+  const dims = getAllDims(SALES);
+  rebuildYearButtons(dims.years);
+  acInit('cliInc', dims.clientes);
+  acInit('cliExc', dims.clientes);
+buildConsultorButtons(dims.consultores);
+  acInit('proInc', dims.produtos);
+  acInit('proExc', dims.produtos);
+dataQuality(SALES);
+
+  document.getElementById('applyBtn').onclick = applyFilters;
+  document.getElementById('resetBtn').onclick = resetFilters;
+
+  // Atualiza automaticamente ao alterar Top X Clientes e Produtos
+  const topCliInput = document.getElementById('topCliInput');
+  const topProdInput = document.getElementById('topProdInput');
+  if (topCliInput) topCliInput.addEventListener('change', applyFilters);
+  if (topProdInput) topProdInput.addEventListener('change', applyFilters);
+
+  // Atualiza automaticamente ao alterar datas
+  document.getElementById('dateStart').addEventListener('input', applyFilters);
+  document.getElementById('dateEnd').addEventListener('input', applyFilters);
+  document.getElementById('dateStart').addEventListener('change', applyFilters);
+  document.getElementById('dateEnd').addEventListener('change', applyFilters);
+  applyFilters();
+
+  // XLSX offline: explicação
+  document.getElementById('xlsxNote').textContent =
+    'XLSX direto no navegador offline exige uma biblioteca grande (ex.: SheetJS). Para manter o arquivo único leve, a importação foi feita via CSV. Se você quiser XLSX, eu posso gerar uma versão com o leitor XLSX embutido, mas o HTML fica bem maior.';
+}
+
+/* ==========================================================
+   IMPORTAÇÃO DE CSV
+   ========================================================== */
+function sniffDelimiter(line) {
+  const candidates = [';','\t',',','|'];
+  let best = ';', bestCount = -1;
+  for (const d of candidates) {
+    const c = (line.split(d).length - 1);
+    if (c > bestCount) { best = d; bestCount = c; }
+  }
+  return best;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r/g,'').split('\n').filter(x=>x.trim().length);
+  if (!lines.length) return [];
+  const delim = sniffDelimiter(lines[0]);
+
+  // Parser simples com suporte a aspas
+  function splitLine(line) {
+    const out = [];
+    let cur = '';
+    let inQ = false;
+    for (let i=0;i<line.length;i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i+1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQ = !inQ;
+        }
+      } else if (ch === delim && !inQ) {
+        out.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    out.push(cur);
+    return out;
+  }
+
+  const header = splitLine(lines[0]).map(h=>h.trim());
+  const idx = (name) => header.indexOf(name);
+
+  const iData = idx('Data');
+  const iCli = idx('Cliente');
+  const iCon = idx('Consultor');
+  const iBru = idx('Bruto(R$)');
+  const iLiq = idx('Líquido(R$)');
+  const iPro = idx('Produtos');
+
+  const required = [iData,iCli,iCon,iBru,iLiq,iPro];
+  if (required.some(x=>x < 0)) {
+    alert('CSV inválido. Colunas esperadas: Data, Cliente, Consultor, Bruto(R$), Líquido(R$), Produtos');
+    return null;
+  }
+
+  const rows = [];
+  for (let r=1; r<lines.length; r++) {
+    const cols = splitLine(lines[r]);
+    const rawDate = (cols[iData]||'').trim();
+    let iso = null;
+
+    // tenta ISO primeiro
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+      iso = rawDate;
+    } else {
+      // tenta dd/mm/yyyy
+      const m = rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        const dd = String(m[1]).padStart(2,'0');
+        const mm = String(m[2]).padStart(2,'0');
+        const yyyy = m[3];
+        iso = `${yyyy}-${mm}-${dd}`;
+      }
+    }
+    if (!iso) continue;
+
+    rows.push({
+      date: iso,
+      cliente: (cols[iCli]||'').trim(),
+      consultor: (cols[iCon]||'').trim(),
+      bruto: brMoneyToNumber(cols[iBru]),
+      liquido: brMoneyToNumber(cols[iLiq]),
+      produtos: parseProductsHTML(cols[iPro]||'')
+    });
+  }
+  return rows;
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCSV(String(reader.result||''));
+    if (!rows) return;
+    SALES = rows;
+    renderBaseMeta(SALES);
+
+    const dims = getAllDims(SALES);
+    rebuildYearButtons(dims.years);
+  acInit('cliInc', dims.clientes);
+  acInit('cliExc', dims.clientes);
+buildConsultorButtons(dims.consultores);
+  acInit('proInc', dims.produtos);
+  acInit('proExc', dims.produtos);
+dataQuality(SALES);
+    resetFilters();
+  };
+  reader.readAsText(f, 'utf-8');
+});
+
+initDashboard();
+</script>
+
+
+<!-- POS_COLUMN_INJECTOR_START -->
+<script>
+(function(){
+  function ensureHeaderPos(tbl){
+    const headerTr = tbl.querySelector("thead tr") || tbl.querySelector("tr");
+    if(!headerTr) return;
+
+    // já tem POS?
+    const firstCell = headerTr.children && headerTr.children[0];
+    if(firstCell && String(firstCell.textContent).trim().toUpperCase() === "POS.") return;
+    if(headerTr.querySelector(".pos-col")) return;
+
+    const hasTH = !!headerTr.querySelector("th");
+    const cell = document.createElement(hasTH ? "th" : "td");
+    cell.textContent = "POS.";
+    cell.className = "pos-col";
+    headerTr.insertBefore(cell, headerTr.firstChild);
+  }
+
+  function fixTotalRow(tbl){
+    // Linha de total normalmente contém "Total:"
+    const totalRow = Array.from(tbl.querySelectorAll("tr"))
+      .find(tr => (tr.textContent || "").toLowerCase().includes("total"));
+
+    if(!totalRow) return;
+
+    // Se já existe um placeholder na primeira célula, não mexe
+    const first = totalRow.children && totalRow.children[0];
+    if(first && first.classList && first.classList.contains("pos-col")) return;
+
+    // Se a linha usa colspan no primeiro item, aumenta 1
+    const firstCell = totalRow.querySelector("td,th");
+    if(firstCell && firstCell.hasAttribute("colspan")){
+      const cs = parseInt(firstCell.getAttribute("colspan"), 10);
+      if(Number.isFinite(cs)) firstCell.setAttribute("colspan", String(cs + 1));
+      return;
+    }
+
+    // Caso normal: insere célula vazia para alinhar colunas após adicionar POS
+    const td = document.createElement("td");
+    td.textContent = "";
+    td.className = "pos-col";
+    totalRow.insertBefore(td, totalRow.firstChild);
+  }
+
+  function addPosColumn(tableId){
+    const tbl = document.getElementById(tableId);
+    if(!tbl) return;
+
+    ensureHeaderPos(tbl);
+
+    const bodyRows = (tbl.tBodies && tbl.tBodies[0])
+      ? Array.from(tbl.tBodies[0].rows)
+      : Array.from(tbl.querySelectorAll("tr"));
+
+    let pos = 1;
+
+    bodyRows.forEach((tr) => {
+      const txt = (tr.textContent || "").trim().toLowerCase();
+
+      // ignora cabeçalho e total
+      if (tr.querySelector("th")) return;
+      if (txt.includes("total")) return;
+      if (txt.includes("data") && txt.includes("cliente")) return;
+
+      if (tr.querySelector("td.pos-col")) return;
+
+      const td = document.createElement("td");
+      td.textContent = String(pos++);
+      td.className = "pos-col";
+      tr.insertBefore(td, tr.firstChild);
+    });
+
+    // depois de inserir POS nas linhas, ajusta o total
+    fixTotalRow(tbl);
+  }
+
+  function run(){
+    addPosColumn("topOut");
+    addPosColumn("lowOut");
+  }
+
+  document.addEventListener("DOMContentLoaded", run);
+  const mo = new MutationObserver(run);
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+<!-- POS_COLUMN_INJECTOR_END -->
+
+</body>
+</html>
